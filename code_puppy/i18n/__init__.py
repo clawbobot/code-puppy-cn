@@ -8,7 +8,7 @@ from .locale import (
     normalize_locale,
     set_locale,
 )
-from .translator import t
+from .translator import t, t_or
 
 __all__ = [
     "available_locales",
@@ -18,4 +18,5 @@ __all__ = [
     "normalize_locale",
     "set_locale",
     "t",
+    "t_or",
 ]

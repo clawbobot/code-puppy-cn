@@ -17,7 +17,7 @@ def get_commands_help():
     from rich.text import Text
 
     from code_puppy.command_line.command_registry import get_unique_commands
-    from code_puppy.i18n import t
+    from code_puppy.i18n import t, t_or
 
     # Ensure plugins are loaded so custom help can register
     _ensure_plugins_loaded()
@@ -31,10 +31,9 @@ def get_commands_help():
     # Get registered commands (all categories are built-in)
     registered_commands = get_unique_commands()
     for cmd_info in sorted(registered_commands, key=lambda c: c.name):
-        translation_key = f"commands.{cmd_info.name}"
-        translated = t(translation_key)
-        description = (
-            cmd_info.description if translated == translation_key else translated
+        description = t_or(
+            f"commands.{cmd_info.name}",
+            cmd_info.description,
         )
         builtin_cmds.append((cmd_info.usage, description))
 
@@ -50,7 +49,8 @@ def get_commands_help():
             # Format 1: Tuple with (command_name, description)
             if isinstance(res, tuple) and len(res) == 2:
                 cmd_name = str(res[0])
-                custom_entries.append((f"/{cmd_name}", str(res[1])))
+                description = t_or(f"commands.{cmd_name}", str(res[1]))
+                custom_entries.append((f"/{cmd_name}", description))
             # Format 2: List of tuples or strings
             elif isinstance(res, list):
                 # Check if it's a list of tuples (preferred format)
@@ -58,7 +58,8 @@ def get_commands_help():
                     for item in res:
                         if isinstance(item, tuple) and len(item) == 2:
                             cmd_name = str(item[0])
-                            custom_entries.append((f"/{cmd_name}", str(item[1])))
+                            description = t_or(f"commands.{cmd_name}", str(item[1]))
+                            custom_entries.append((f"/{cmd_name}", description))
                 # Format 3: List of strings (legacy format)
                 # Extract command from first line like "/command_name - Description"
                 elif res and isinstance(res[0], str) and res[0].startswith("/"):
@@ -66,7 +67,10 @@ def get_commands_help():
                     if " - " in first_line:
                         parts = first_line.split(" - ", 1)
                         cmd_name = parts[0].lstrip("/").strip()
-                        description = parts[1].strip()
+                        description = t_or(
+                            f"commands.{cmd_name}",
+                            parts[1].strip(),
+                        )
                         custom_entries.append((f"/{cmd_name}", description))
     except Exception:
         pass

@@ -37,3 +37,19 @@ def t(key: str, **params: Any) -> str:
     except (KeyError, ValueError, IndexError) as exc:
         logger.error("Translation formatting failed for %s: %s", key, exc)
         return template
+
+
+def t_or(key: str, fallback: str, **params: Any) -> str:
+    """Translate a key, returning fallback without warning when it is unknown."""
+    from .locale import get_locale
+
+    locale = get_locale()
+    english = _load_catalog("en-US")
+    template = _load_catalog(locale).get(key) or english.get(key)
+    if template is None:
+        return fallback
+    try:
+        return template.format(**params)
+    except (KeyError, ValueError, IndexError) as exc:
+        logger.error("Translation formatting failed for %s: %s", key, exc)
+        return fallback

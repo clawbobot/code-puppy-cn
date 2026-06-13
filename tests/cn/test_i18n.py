@@ -47,3 +47,19 @@ def test_missing_key_and_format_parameter_do_not_crash(monkeypatch, tmp_path):
     set_locale("zh-CN")
     assert t("not.a.real.key") == "not.a.real.key"
     assert "{model}" in t("cn_setup.added")
+
+
+def test_help_descriptions_switch_to_chinese(monkeypatch, tmp_path):
+    _point_config_to_tmp(monkeypatch, tmp_path)
+    from code_puppy.command_line.command_handler import get_commands_help
+    from code_puppy.i18n import set_locale
+
+    set_locale("zh-CN")
+    help_text = str(get_commands_help())
+
+    assert "内置命令" in help_text
+    assert "配置代码差异高亮颜色" in help_text
+    assert "列出、启用或禁用插件" in help_text
+    assert "登录 ChatGPT 并导入模型" in help_text
+    assert "Browse and add models from models.dev catalog" not in help_text
+    assert "List, enable, or disable plugins" not in help_text
