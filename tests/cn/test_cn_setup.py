@@ -1,4 +1,6 @@
 import json
+import asyncio
+import threading
 from types import SimpleNamespace
 
 
@@ -60,3 +62,24 @@ def test_noninteractive_wizard_fails_closed(monkeypatch):
 
     monkeypatch.setattr("sys.stdin.isatty", lambda: False)
     assert run_setup_wizard(_registry()).status == "non_interactive"
+
+
+def test_wizard_uses_worker_thread_inside_running_event_loop(monkeypatch):
+    import code_puppy.cn_setup as setup
+
+    caller_thread = threading.get_ident()
+    worker_threads = []
+
+    def fake_wizard(registry):
+        worker_threads.append(threading.get_ident())
+        return setup.SetupResult(status="cancelled")
+
+    monkeypatch.setattr(setup, "_run_setup_wizard", fake_wizard)
+
+    async def invoke():
+        return setup.run_setup_wizard(object())
+
+    result = asyncio.run(invoke())
+    assert result.status == "cancelled"
+    assert worker_threads
+    assert worker_threads[0] != caller_thread

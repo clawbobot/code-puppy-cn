@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import asyncio
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Any
 
@@ -181,7 +183,7 @@ def _ask_secret(title: str, text: str) -> str | None:
         ).run()
 
 
-def run_setup_wizard(registry: Any | None = None) -> SetupResult:
+def _run_setup_wizard(registry: Any | None = None) -> SetupResult:
     """Run the localized provider -> model -> credential -> activate flow."""
     from code_puppy.models_dev_parser import ModelsDevRegistry
     from code_puppy.provider_credentials import is_credential_set
@@ -225,3 +227,17 @@ def run_setup_wizard(registry: Any | None = None) -> SetupResult:
         credentials=credentials,
         activate=True,
     )
+
+
+def run_setup_wizard(registry: Any | None = None) -> SetupResult:
+    """Run the setup TUI safely from both sync and asyncio-driven CLIs."""
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return _run_setup_wizard(registry)
+
+    # Custom command callbacks are synchronous but execute inside Code Puppy's
+    # asyncio loop. prompt_toolkit's synchronous dialog API creates its own
+    # event loop, so it must run in another thread.
+    with ThreadPoolExecutor(max_workers=1, thread_name_prefix="cn-setup") as executor:
+        return executor.submit(_run_setup_wizard, registry).result()
