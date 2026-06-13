@@ -291,8 +291,10 @@ class TestGrepFunction:
         invoked_cmd = mock_run.call_args[0][0]
         e_index = invoked_cmd.index("-e")
         assert invoked_cmd[e_index + 1] == "class ResourceLimits"
-        # The only path argument should be the search directory.
-        assert invoked_cmd[-1] == os.path.abspath(str(tmp_path))
+        # Search runs from the requested directory so ignore rules are rooted
+        # at the project rather than matching an ancestor such as /tmp.
+        assert invoked_cmd[-1] == "."
+        assert mock_run.call_args.kwargs["cwd"] == os.path.abspath(str(tmp_path))
 
     def test_grep_rejects_output_format_flags(self, tmp_path):
         """Flags incompatible with JSON match parsing produce a clear error."""

@@ -342,10 +342,13 @@ class TestJsonAgentExtended:
         agent_file.write_text(json.dumps(config))
 
         agent = JSONAgent(str(agent_file))
-        # Should fall back to base class implementation
-        model_name = agent.get_model_name()
-        # We don't know what the default is, but it should not be None
-        assert model_name is not None
+        # The distribution intentionally has no bundled default model. Verify
+        # the JSON agent delegates to the base/global resolver instead.
+        with patch(
+            "code_puppy.agents.base_agent.get_global_model_name",
+            return_value="test-model",
+        ):
+            assert agent.get_model_name() == "test-model"
 
 
 class TestDiscoverJsonAgents:

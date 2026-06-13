@@ -739,10 +739,14 @@ def _grep(context: RunContext, search_string: str, directory: str = ".") -> Grep
 
         cmd.extend(["--ignore-file", ignore_file])
         cmd.extend(rg_args)
-        cmd.append(directory)
+        # Search from the requested directory so ignore patterns are evaluated
+        # relative to that root. Otherwise an explicit path under /tmp is
+        # excluded by the generic **/tmp/** rule on Linux.
+        cmd.append(".")
         # Use encoding with error handling to handle files with invalid UTF-8
         result = subprocess.run(
             cmd,
+            cwd=directory,
             capture_output=True,
             text=True,
             timeout=30,
@@ -772,6 +776,8 @@ def _grep(context: RunContext, search_string: str, directory: str = ".") -> Grep
                     file_path = (
                         path_data.get("text", "") if path_data.get("text") else ""
                     )
+                    if file_path and not os.path.isabs(file_path):
+                        file_path = os.path.abspath(os.path.join(directory, file_path))
                     line_number = data.get("line_number", None)
                     line_content = (
                         data.get("lines", {}).get("text", "")

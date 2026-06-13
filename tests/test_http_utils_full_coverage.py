@@ -541,6 +541,7 @@ class TestFindAvailablePort:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 s.bind(("127.0.0.1", p))
+                s.listen(1)
                 socks.append(s)
             result = find_available_port(start_port=49900, end_port=49902)
             assert result is None

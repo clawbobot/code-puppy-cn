@@ -237,9 +237,21 @@ def mock_get_current_agent():
     mock_agent = Mock()
     mock_agent.reload_code_generation_agent = Mock()
 
-    with patch("code_puppy.agents.get_current_agent", return_value=mock_agent) as mock:
-        mock.agent = mock_agent
-        yield mock
+    targets = [
+        "code_puppy.agents.get_current_agent",
+        "code_puppy.command_line.mcp.start_command.get_current_agent",
+        "code_puppy.command_line.mcp.stop_command.get_current_agent",
+        "code_puppy.command_line.mcp.start_all_command.get_current_agent",
+        "code_puppy.command_line.mcp.stop_all_command.get_current_agent",
+    ]
+    patches = [patch(target, return_value=mock_agent) for target in targets]
+    mocks = [item.start() for item in patches]
+    try:
+        mocks[0].agent = mock_agent
+        yield mocks[0]
+    finally:
+        for item in reversed(patches):
+            item.stop()
 
 
 @pytest.fixture
