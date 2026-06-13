@@ -23,6 +23,12 @@ dummy_path
 
 .DS_Store
 .env
+.env.*
+!.env.example
+*.pem
+*.key
+puppy.cfg
+work/acceptance/
 .serena/
 .beads/
 main.dist/

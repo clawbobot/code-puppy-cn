@@ -15,6 +15,7 @@ permissions:
 
 jobs:
   release:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: release
     steps:
@@ -24,7 +25,10 @@ jobs:
           python-version: "3.13"
       - run: uv sync --dev
       - run: uv run pytest tests/cn
+      - run: uv run ruff check code_puppy tests/cn scripts
       - run: uv build
+      - name: Verify package metadata
+        run: uvx twine check dist/*
       - uses: actions/upload-artifact@v4
         with:
           name: code-puppy-cn-dist

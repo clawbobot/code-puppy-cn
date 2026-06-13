@@ -2,35 +2,21 @@
 
 ![Code Puppy Logo](code_puppy.png)
 
-**🐶✨The sassy AI code agent that makes IDEs look outdated** ✨🐶
+## Code Puppy CN
 
-[![Version](https://img.shields.io/pypi/v/code-puppy?style=for-the-badge&logo=python&label=Version&color=purple)](https://pypi.org/project/code-puppy/)
-[![Downloads](https://img.shields.io/badge/Downloads-170k%2B-brightgreen?style=for-the-badge&logo=download)](https://pypi.org/project/code-puppy/)
-[![Python](https://img.shields.io/badge/Python-3.11%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
-[![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge&logo=github)](https://github.com/mpfaffenberger/code_puppy/actions)
-[![Tests](https://img.shields.io/badge/Tests-Passing-success?style=for-the-badge&logo=pytest)](https://github.com/mpfaffenberger/code_puppy/tests)
+**Code Puppy 的中英文双语发行版**
 
-[![100% Open Source](https://img.shields.io/badge/100%25-Open%20Source-blue?style=for-the-badge)](https://github.com/mpfaffenberger/code_puppy)
-[![Pydantic AI](https://img.shields.io/badge/Pydantic-AI-success?style=for-the-badge)](https://github.com/pydantic/pydantic-ai)
-
-[![100% privacy](https://img.shields.io/badge/FULL-Privacy%20commitment-blue?style=for-the-badge)](https://github.com/mpfaffenberger/code_puppy/blob/main/README.md#code-puppy-privacy-commitment)
-
-[![GitHub stars](https://img.shields.io/github/stars/mpfaffenberger/code_puppy?style=for-the-badge&logo=github)](https://github.com/mpfaffenberger/code_puppy/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/mpfaffenberger/code_puppy?style=for-the-badge&logo=github)](https://github.com/mpfaffenberger/code_puppy/network)
-
-[![Discord](https://img.shields.io/badge/Discord-Community-purple?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/eAGdE4J7Ca)
-[![Docs](https://img.shields.io/badge/Read-The%20Docs-blue?style=for-the-badge&logo=readthedocs)](https://code-puppy.dev)
-
-**[⭐ Star this repo if you hate expensive IDEs! ⭐](#quick-start)**
-
-*"Who needs an IDE when you have 1024 angry puppies?"* - Someone, probably.
+[![Version](https://img.shields.io/badge/version-0.1.0--MVP-purple)](pyproject.toml)
+[![Python](https://img.shields.io/badge/Python-3.11--3.14-blue)](https://python.org)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![Upstream](https://img.shields.io/badge/upstream-Code%20Puppy-blue)](https://github.com/mpfaffenberger/code_puppy)
 
 </div>
 
 ---
 
-## Code Puppy CN bilingual MVP
+> Status: pre-release MVP. The first public release will be published after
+> cross-platform and live-provider acceptance is complete.
 
 Code Puppy CN is a thin MIT-licensed distribution of Code Puppy for teams that
 need a Chinese/English interface and easier access to providers available in
@@ -41,9 +27,22 @@ Code Puppy CN 是 Code Puppy 的轻量双语发行版，面向需要中英文界
 中国可用模型的个人和企业用户。项目不复制上游 Provider、模型、Agent、MCP 或
 Skills 能力，也不会增加 `cn-` 模型别名。
 
+## MVP capabilities / MVP 能力
+
+- Immediate `zh-CN` / `en-US` interface switching.
+- Localized startup, help, setup, confirmation, error, and diagnostic paths.
+- `/cn-setup` backed by the upstream models.dev registry.
+- `/doctor-cn` and `pup-cn-doctor --json` with redacted diagnostics.
+- The same upstream Agent Runtime, model names, MCP manager, and skills system.
+
+## Local installation / 本地安装
+
 ```bash
-# Install from a source checkout / 从源码目录安装
-uv tool install .
+# Install from this source checkout / 从当前源码目录安装
+uv tool install --force .
+
+# Optional Google Gemini and Vertex support
+uv tool install --force --with "pydantic-ai-slim[google]==1.56.0" .
 
 # Start / 启动
 pup-cn
@@ -61,13 +60,15 @@ Frequently used commands / 高频命令：
 
 Provider and model names come directly from the upstream models.dev registry.
 See [UPSTREAM.md](UPSTREAM.md) for synchronization and contribution guidance,
-and [docs/MVP_ACCEPTANCE.md](docs/MVP_ACCEPTANCE.md) for the validation flow.
-P0 release-gate validation is documented in
-[docs/P0_ACCEPTANCE.md](docs/P0_ACCEPTANCE.md).
+the [MVP acceptance guide](docs/MVP_ACCEPTANCE.md) for the validation flow, and
+the [P0 release gate](docs/P0_ACCEPTANCE.md) for release requirements.
 
+Security issues should follow [SECURITY.md](SECURITY.md). Contributions should
+follow [CONTRIBUTING.md](CONTRIBUTING.md).
 
+---
 
-## Overview
+## Upstream documentation
 
 *This project was coded angrily in reaction to Windsurf and Cursor removing access to models and raising prices.*
 
