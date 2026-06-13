@@ -17,6 +17,7 @@ def get_commands_help():
     from rich.text import Text
 
     from code_puppy.command_line.command_registry import get_unique_commands
+    from code_puppy.i18n import t
 
     # Ensure plugins are loaded so custom help can register
     _ensure_plugins_loaded()
@@ -30,7 +31,12 @@ def get_commands_help():
     # Get registered commands (all categories are built-in)
     registered_commands = get_unique_commands()
     for cmd_info in sorted(registered_commands, key=lambda c: c.name):
-        builtin_cmds.append((cmd_info.usage, cmd_info.description))
+        translation_key = f"commands.{cmd_info.name}"
+        translated = t(translation_key)
+        description = (
+            cmd_info.description if translated == translation_key else translated
+        )
+        builtin_cmds.append((cmd_info.usage, description))
 
     # Get custom commands from plugins
     custom_entries: list[tuple[str, str]] = []
@@ -83,7 +89,7 @@ def get_commands_help():
         return desc[: max_width - 3] + "..."
 
     # Display Built-in Commands section (starts immediately, no blank line)
-    lines.append(Text("Built-in Commands", style="bold magenta"))
+    lines.append(Text(t("help.builtin"), style="bold magenta"))
     for cmd, desc in sorted(builtin_cmds, key=lambda x: x[0]):
         truncated_desc = truncate_desc(desc, max_desc_width)
         left = Text(cmd.ljust(column_width), style="cyan")
@@ -96,7 +102,7 @@ def get_commands_help():
     # Display Custom Commands section (if any)
     if custom_entries:
         lines.append(Text(""))
-        lines.append(Text("Custom Commands", style="bold magenta"))
+        lines.append(Text(t("help.custom"), style="bold magenta"))
         for cmd, desc in sorted(custom_entries, key=lambda x: x[0]):
             truncated_desc = truncate_desc(desc, max_desc_width)
             left = Text(cmd.ljust(column_width), style="cyan")
@@ -108,9 +114,9 @@ def get_commands_help():
 
     # Display Shell Pass-through section
     lines.append(Text(""))
-    lines.append(Text("Shell Pass-through", style="bold magenta"))
+    lines.append(Text(t("help.shell"), style="bold magenta"))
     shell_left = Text("!<command>".ljust(column_width), style="cyan")
-    shell_right = Text("Run a shell command directly (e.g., !git status)")
+    shell_right = Text(t("help.shell_desc"))
     shell_line = Text()
     shell_line.append_text(shell_left)
     shell_line.append_text(shell_right)
@@ -182,6 +188,7 @@ def handle_command(command: str):
     from rich.text import Text
 
     from code_puppy.command_line.command_registry import get_command
+    from code_puppy.i18n import t
     from code_puppy.messaging import emit_info, emit_warning
 
     _ensure_plugins_loaded()
@@ -273,11 +280,7 @@ def handle_command(command: str):
             emit_warning(f"Custom command hook error: {e}")
 
         if name:
-            emit_warning(
-                Text.from_markup(
-                    f"Unknown command: {command}\n[dim]Type /help for options.[/dim]"
-                )
-            )
+            emit_warning(Text.from_markup(f"{t('command.unknown', command=command)}"))
         else:
             # Show current model ONLY here
             from code_puppy.command_line.model_picker_completion import get_active_model
@@ -285,7 +288,7 @@ def handle_command(command: str):
             current_model = get_active_model()
             emit_info(
                 Text.from_markup(
-                    f"[bold green]Current Model:[/bold green] [cyan]{current_model}[/cyan]"
+                    f"[bold green]{t('command.current_model', model=current_model)}[/bold green]"
                 )
             )
         return True

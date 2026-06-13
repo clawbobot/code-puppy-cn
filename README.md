@@ -30,6 +30,39 @@
 
 ---
 
+## Code Puppy CN bilingual MVP
+
+Code Puppy CN is a thin MIT-licensed distribution of Code Puppy for teams that
+need a Chinese/English interface and easier access to providers available in
+China. It preserves the upstream runtime, models.dev registry, model names,
+agents, MCP manager, and skills system.
+
+Code Puppy CN 是 Code Puppy 的轻量双语发行版，面向需要中英文界面以及更便捷接入
+中国可用模型的个人和企业用户。项目不复制上游 Provider、模型、Agent、MCP 或
+Skills 能力，也不会增加 `cn-` 模型别名。
+
+```bash
+# Install from a source checkout / 从源码目录安装
+uv tool install .
+
+# Start / 启动
+pup-cn
+
+# Machine-readable diagnostics / 机器可读诊断
+pup-cn-doctor --json
+```
+
+Frequently used commands / 高频命令：
+
+- `/language`, `/language zh-CN`, `/language en-US`, `/语言`
+- `/cn-setup` discovers models from `alibaba-cn`, `deepseek`, `moonshotai-cn`,
+  and `zai`
+- `/doctor-cn` runs localized environment and compatibility diagnostics
+
+Provider and model names come directly from the upstream models.dev registry.
+See [UPSTREAM.md](UPSTREAM.md) for synchronization and contribution guidance,
+and [docs/MVP_ACCEPTANCE.md](docs/MVP_ACCEPTANCE.md) for the validation flow.
+
 
 
 ## Overview

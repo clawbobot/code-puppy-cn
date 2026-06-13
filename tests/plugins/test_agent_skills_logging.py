@@ -74,7 +74,7 @@ def test_prompt_section_skips_invalid_skill_metadata_quietly(
         with caplog.at_level(logging.WARNING):
             section = register_callbacks._get_skills_prompt_section()
 
-        assert section is None
+            assert section is None
         assert "No valid frontmatter" not in caplog.text
         assert "Failed to parse metadata" not in caplog.text
     finally:

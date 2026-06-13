@@ -180,7 +180,9 @@ def _iter_plugin_skill_registrations() -> Iterable[tuple[str, str, dict[str, Any
             yield callback.__module__, callback.__name__, entry
 
 
-def _collect_plugin_skills() -> List[SkillInfo]:
+def _collect_plugin_skills(
+    excluded_modules: set[str] | None = None,
+) -> List[SkillInfo]:
     if _PLUGIN_SKILLS_CACHE_DIR.exists():
         shutil.rmtree(_PLUGIN_SKILLS_CACHE_DIR, ignore_errors=True)
     _PLUGIN_SKILLS_CACHE_DIR.mkdir(parents=True, exist_ok=True)
@@ -188,7 +190,10 @@ def _collect_plugin_skills() -> List[SkillInfo]:
     plugin_skills: List[SkillInfo] = []
     seen_names: set[str] = set()
 
+    excluded_modules = excluded_modules or set()
     for callback_module, callback_name, entry in _iter_plugin_skill_registrations():
+        if callback_module in excluded_modules:
+            continue
         skill = _materialize_plugin_skill(callback_module, callback_name, entry)
         if skill is None:
             continue
@@ -210,6 +215,7 @@ def discover_skills(directories: Optional[List[Path]] = None) -> List[SkillInfo]
     """Scan directories for valid skills."""
     global _skill_cache
 
+    explicit_directories = directories is not None
     if directories is None:
         configured = [Path(d) for d in get_skill_directories()]
         defaults = get_default_skill_directories()
@@ -262,7 +268,12 @@ def discover_skills(directories: Optional[List[Path]] = None) -> List[SkillInfo]
                     "Found skill directory without SKILL.md: %s", skill_dir.name
                 )
 
-    for plugin_skill in _collect_plugin_skills():
+    excluded_modules = (
+        {"code_puppy.plugins.cn_experience.register_callbacks"}
+        if explicit_directories
+        else set()
+    )
+    for plugin_skill in _collect_plugin_skills(excluded_modules=excluded_modules):
         if plugin_skill.name in seen_skill_names:
             logger.debug(
                 "Skipping plugin skill '%s' because a filesystem skill already exists",

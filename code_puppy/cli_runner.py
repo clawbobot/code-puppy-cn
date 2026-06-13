@@ -32,6 +32,7 @@ from code_puppy.config import (
     save_command_to_history,
 )
 from code_puppy.http_utils import find_available_port
+from code_puppy.i18n import t
 from code_puppy.keymap import (
     KeymapError,
     get_cancel_agent_display_name,
@@ -104,7 +105,14 @@ def _resume_session_from_path(raw_path: str) -> None:
 
 async def main():
     """Main async entry point for Code Puppy CLI."""
-    parser = argparse.ArgumentParser(description="Code Puppy - A code generation agent")
+    from code_puppy.i18n import ensure_locale_configured
+
+    locale_probe = argparse.ArgumentParser(add_help=False)
+    locale_probe.add_argument("--prompt", "-p", type=str)
+    probe_args, _ = locale_probe.parse_known_args()
+    ensure_locale_configured(interactive=not bool(probe_args.prompt))
+
+    parser = argparse.ArgumentParser(description=t("app.description"))
     parser.add_argument(
         "--version",
         "-v",
@@ -199,14 +207,14 @@ async def main():
             # Print directly to console to avoid the 'dim' style from emit_system_message
             display_console.print("\n".join(lines))
         except ImportError:
-            emit_system_message("🐶 Code Puppy is Loading...")
+            emit_system_message(t("app.loading"))
 
         # Truecolor warning moved to interactive_mode() so it prints LAST
         # after all the help stuff - max visibility for the ugly red box!
 
     available_port = find_available_port()
     if available_port is None:
-        emit_error("No available ports in range 8090-9010!")
+        emit_error(t("app.no_ports"))
         return
 
     # Early model setting if specified via command line
@@ -574,9 +582,9 @@ async def interactive_mode(message_renderer, initial_command: str = None) -> Non
                 _perform_authentication()
                 set_model_name("claude-code-claude-opus-4-7")
             elif result == "completed":
-                emit_info("🎉 Tutorial complete! Happy coding!")
+                emit_info(t("onboarding.complete"))
             elif result == "skipped":
-                emit_info("⏭️ Tutorial skipped. Run /tutorial anytime!")
+                emit_info(t("onboarding.skipped"))
 
             # No bundled default model anymore: if the user skipped OAuth they
             # must add a model explicitly.
@@ -584,7 +592,7 @@ async def interactive_mode(message_renderer, initial_command: str = None) -> Non
     except Exception as e:
         from code_puppy.messaging import emit_warning
 
-        emit_warning(f"Tutorial auto-start failed: {e}")
+        emit_warning(t("onboarding.failed", error=e))
 
     # Track the current agent task for cancellation on quit
     current_agent_task = None
@@ -595,7 +603,7 @@ async def interactive_mode(message_renderer, initial_command: str = None) -> Non
 
         # Get the custom prompt from the current agent, or use default
         current_agent = get_current_agent()
-        user_prompt = current_agent.get_user_prompt() or "Enter your coding task:"
+        user_prompt = current_agent.get_user_prompt() or t("app.prompt")
 
         emit_info(f"{user_prompt}\n")
 
@@ -631,13 +639,13 @@ async def interactive_mode(message_renderer, initial_command: str = None) -> Non
             from code_puppy.messaging import emit_warning
 
             await on_interactive_turn_cancel("", reason="Ctrl+C")
-            emit_warning("\nInput cancelled")
+            emit_warning(f"\n{t('app.input_cancelled')}")
             continue
         except EOFError:
             # Handle Ctrl+D - exit the application
             from code_puppy.messaging import emit_success
 
-            emit_success("\nGoodbye! (Ctrl+D)")
+            emit_success(f"\n{t('app.goodbye')} (Ctrl+D)")
 
             # Cancel any running agent task for clean shutdown
             if current_agent_task and not current_agent_task.done():

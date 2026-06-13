@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "code-puppy"
-version = "0.0.564"
-description = "Code generation agent"
+name = "code-puppy-cn"
+version = "0.1.0"
+description = "Bilingual Code Puppy distribution for China-region models"
 readme = "README.md"
 requires-python = ">=3.11,<3.15"
 dependencies = [
@@ -56,13 +56,12 @@ bedrock = ["boto3>=1.35.0"]
 durable = ["dbos>=2.11.0"]
 
 [project.urls]
-repository = "https://github.com/mpfaffenberger/code_puppy"
-HomePage = "https://github.com/mpfaffenberger/code_puppy"
-
+Upstream = "https://github.com/mpfaffenberger/code_puppy"
 
 [project.scripts]
-code-puppy = "code_puppy.main:main_entry"
-pup = "code_puppy.main:main_entry"
+code-puppy-cn = "code_puppy.main:main_entry"
+pup-cn = "code_puppy.main:main_entry"
+pup-cn-doctor = "code_puppy.cn_doctor:main"
 
 [tool.logfire]
 ignore_no_config = true

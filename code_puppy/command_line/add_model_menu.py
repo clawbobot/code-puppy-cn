@@ -1008,13 +1008,14 @@ class AddModelMenu:
 
             try:
                 # Use safe_input for cross-platform compatibility (Windows fix)
-                value = safe_input(f"  Enter {env_var} (or press Enter to skip): ")
+                raw_value = safe_input(f"  Enter {env_var} (or press Enter to skip): ")
 
-                if not value:
+                if not raw_value:
                     emit_warning(
                         f"Skipped {env_var} - you can set it later with /set {env_var}=<value>"
                     )
                     continue
+                value = str(raw_value)
 
                 # Save to config
                 set_config_value(env_var, value)

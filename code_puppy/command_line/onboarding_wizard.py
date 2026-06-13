@@ -191,8 +191,10 @@ def _get_slide_panel_content(wizard: OnboardingWizard) -> ANSI:
     # Progress indicator
     progress = wizard.get_progress_indicator()
     console.print(f"[dim]{progress}[/dim]")
+    from code_puppy.i18n import t
+
     console.print(
-        f"[dim]Slide {wizard.current_slide + 1} of {wizard.TOTAL_SLIDES}[/dim]\n"
+        f"[dim]{t('onboarding.slide', current=wizard.current_slide + 1, total=wizard.TOTAL_SLIDES)}[/dim]\n"
     )
 
     # Slide content (includes nav footer)
