@@ -71,7 +71,9 @@ def _stdin_supports_interactive_approval() -> bool:
 
 def _deny_noninteractive_approval(title: str) -> tuple[bool, None]:
     """Fail closed when approval is requested without an interactive stdin."""
-    emit_warning(f"Approval for '{title}' rejected: stdin is not interactive.")
+    from code_puppy.i18n import t
+
+    emit_warning(t("approval.non_interactive", title=title))
     return False, None
 
 
@@ -935,9 +937,9 @@ async def arrow_select_async(
                 lines.append(border_bottom)
                 lines.append("")
 
-        lines.append(
-            "<ansicyan>(Use ↑↓ or Ctrl+P/N to select, Enter to confirm)</ansicyan>"
-        )
+        from code_puppy.i18n import t
+
+        lines.append(f"<ansicyan>{t('approval.navigation_hint')}</ansicyan>")
         return HTML("\n".join(lines))
 
     # Key bindings
@@ -1021,9 +1023,9 @@ def arrow_select(message: str, choices: list[str]) -> str:
             else:
                 lines.append(f"  {choice}")
         lines.append("")
-        lines.append(
-            "<ansicyan>(Use ↑↓ or Ctrl+P/N to select, Enter to confirm)</ansicyan>"
-        )
+        from code_puppy.i18n import t
+
+        lines.append(f"<ansicyan>{t('approval.navigation_hint')}</ansicyan>")
         return HTML("\n".join(lines))
 
     # Key bindings
@@ -1138,6 +1140,7 @@ def _get_user_approval_impl(
     import time
 
     from code_puppy.tools.command_runner import set_awaiting_user_input
+    from code_puppy.i18n import t
 
     if not _stdin_supports_interactive_approval():
         return _deny_noninteractive_approval(title)
@@ -1156,7 +1159,7 @@ def _get_user_approval_impl(
     # Add preview if provided
     if preview:
         panel_content.append("\n\n", style="")
-        panel_content.append("Preview of changes:", style="bold underline")
+        panel_content.append(t("approval.preview"), style="bold underline")
         panel_content.append("\n", style="")
         formatted_preview = format_diff_with_colors(preview)
 
@@ -1217,24 +1220,23 @@ def _get_user_approval_impl(
         sys.stdout.flush()
 
         # Show arrow-key selector
+        approve_choice = t("approval.approve")
+        reject_choice = t("approval.reject")
+        feedback_choice = t("approval.reject_feedback", name=puppy_name)
         choice = arrow_select(
-            "💭 What would you like to do?",
-            [
-                "✓ Approve",
-                "✗ Reject",
-                f"💬 Reject with feedback (tell {puppy_name} what to change)",
-            ],
+            t("approval.question"),
+            [approve_choice, reject_choice, feedback_choice],
         )
 
-        if choice == "✓ Approve":
+        if choice == approve_choice:
             confirmed = True
-        elif choice == "✗ Reject":
+        elif choice == reject_choice:
             confirmed = False
         else:
             # User wants to provide feedback
             confirmed = False
             emit_info("")
-            emit_info(f"Tell {puppy_name} what to change:")
+            emit_info(t("approval.feedback_prompt", name=puppy_name))
             # Rich's Prompt.ask reads stdin -- suspend the key listener
             # so it doesn't fight us for keystrokes.
             from code_puppy.agents._key_listeners import suspended_key_listener
@@ -1249,7 +1251,7 @@ def _get_user_approval_impl(
                 user_feedback = None
 
     except (KeyboardInterrupt, EOFError):
-        emit_error("Cancelled by user")
+        emit_error(t("approval.cancelled"))
         confirmed = False
 
     finally:
@@ -1272,12 +1274,14 @@ def _get_user_approval_impl(
     emit_info("")
     if not confirmed:
         if user_feedback:
-            emit_error("Rejected with feedback!")
-            emit_warning(f'Telling {puppy_name}: "{user_feedback}"')
+            emit_error(t("approval.rejected_feedback"))
+            emit_warning(
+                t("approval.feedback_summary", name=puppy_name, feedback=user_feedback)
+            )
         else:
-            emit_error("Rejected.")
+            emit_error(t("approval.rejected"))
     else:
-        emit_success("Approved!")
+        emit_success(t("approval.approved"))
 
     # NOW resume spinners after showing the result
     try:
@@ -1335,6 +1339,7 @@ async def _get_user_approval_async_impl(
 ) -> tuple[bool, str | None]:
     """Inner implementation of get_user_approval_async (lock-free)."""
     from code_puppy.tools.command_runner import set_awaiting_user_input
+    from code_puppy.i18n import t
 
     if not _stdin_supports_interactive_approval():
         return _deny_noninteractive_approval(title)
@@ -1353,7 +1358,7 @@ async def _get_user_approval_async_impl(
     # Add preview if provided
     if preview:
         panel_content.append("\n\n", style="")
-        panel_content.append("Preview of changes:", style="bold underline")
+        panel_content.append(t("approval.preview"), style="bold underline")
         panel_content.append("\n", style="")
         formatted_preview = format_diff_with_colors(preview)
 
@@ -1414,24 +1419,23 @@ async def _get_user_approval_async_impl(
         sys.stdout.flush()
 
         # Show arrow-key selector (ASYNC VERSION)
+        approve_choice = t("approval.approve")
+        reject_choice = t("approval.reject")
+        feedback_choice = t("approval.reject_feedback", name=puppy_name)
         choice = await arrow_select_async(
-            "💭 What would you like to do?",
-            [
-                "✓ Approve",
-                "✗ Reject",
-                f"💬 Reject with feedback (tell {puppy_name} what to change)",
-            ],
+            t("approval.question"),
+            [approve_choice, reject_choice, feedback_choice],
         )
 
-        if choice == "✓ Approve":
+        if choice == approve_choice:
             confirmed = True
-        elif choice == "✗ Reject":
+        elif choice == reject_choice:
             confirmed = False
         else:
             # User wants to provide feedback
             confirmed = False
             emit_info("")
-            emit_info(f"Tell {puppy_name} what to change:")
+            emit_info(t("approval.feedback_prompt", name=puppy_name))
             user_feedback = Prompt.ask(
                 "[bold green]➤[/bold green]",
                 default="",
@@ -1441,7 +1445,7 @@ async def _get_user_approval_async_impl(
                 user_feedback = None
 
     except (KeyboardInterrupt, EOFError):
-        emit_error("Cancelled by user")
+        emit_error(t("approval.cancelled"))
         confirmed = False
 
     finally:
@@ -1464,12 +1468,14 @@ async def _get_user_approval_async_impl(
     emit_info("")
     if not confirmed:
         if user_feedback:
-            emit_error("Rejected with feedback!")
-            emit_warning(f'Telling {puppy_name}: "{user_feedback}"')
+            emit_error(t("approval.rejected_feedback"))
+            emit_warning(
+                t("approval.feedback_summary", name=puppy_name, feedback=user_feedback)
+            )
         else:
-            emit_error("Rejected.")
+            emit_error(t("approval.rejected"))
     else:
-        emit_success("Approved!")
+        emit_success(t("approval.approved"))
 
     # NOW resume spinners after showing the result
     try:

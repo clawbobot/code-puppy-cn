@@ -414,39 +414,23 @@ async def interactive_mode(message_renderer, initial_command: str = None) -> Non
     display_console = message_renderer.console
     from code_puppy.messaging import emit_info, emit_system_message
 
-    emit_system_message(
-        "Type '/exit', '/quit', or press Ctrl+D to exit the interactive mode."
-    )
-    emit_system_message("Type 'clear' to reset the conversation history.")
-    emit_system_message("Type /help to view all commands")
-    emit_system_message(
-        "Type @ for path completion, or /model to pick a model. Toggle multiline with Alt+M or F2; newline: Ctrl+J."
-    )
-    emit_system_message("Paste images: Ctrl+V (even on Mac!), F3, or /paste command.")
+    emit_system_message(t("startup.exit_hint"))
+    emit_system_message(t("startup.clear_hint"))
+    emit_system_message(t("startup.help_hint"))
+    emit_system_message(t("startup.completion_hint"))
+    emit_system_message(t("startup.paste_hint"))
     import platform
 
     if platform.system() == "Darwin":
-        emit_system_message(
-            "💡 macOS tip: Use Ctrl+V (not Cmd+V) to paste images in terminal."
-        )
+        emit_system_message(t("startup.macos_paste_hint"))
     cancel_key = get_cancel_agent_display_name()
-    emit_system_message(
-        f"Press {cancel_key} during processing to cancel the current task or inference. Use Ctrl+X to interrupt running shell commands."
-    )
+    emit_system_message(t("startup.cancel_hint", shortcut=cancel_key))
     pause_key = get_pause_agent_display_name()
-    emit_system_message(
-        f"Press {pause_key} during processing to pause the agent and inject a steering message."
-    )
-    emit_system_message(
-        "Use /autosave_load to manually load a previous autosave session."
-    )
-    emit_system_message(
-        "Use /diff to configure diff highlighting colors for file changes."
-    )
-    emit_system_message("To re-run the tutorial, use /tutorial.")
-    emit_system_message(
-        "!<command> to run shell commands directly (e.g., !git status)",
-    )
+    emit_system_message(t("startup.pause_hint", shortcut=pause_key))
+    emit_system_message(t("startup.autosave_hint"))
+    emit_system_message(t("startup.diff_hint"))
+    emit_system_message(t("startup.tutorial_hint"))
+    emit_system_message(t("startup.shell_hint"))
     # Print truecolor warning LAST so it's the most visible thing on startup
     # Big ugly red box should be impossible to miss! 🔴
     print_truecolor_warning(display_console)

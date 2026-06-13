@@ -955,22 +955,23 @@ async def run_shell_command(
         from code_puppy.config import get_puppy_name
 
         puppy_name = get_puppy_name().title()
+        from code_puppy.i18n import t
 
         # Build panel content
         panel_content = Text()
-        panel_content.append("⚡ Requesting permission to run:\n", style="bold yellow")
+        panel_content.append(t("approval.shell_request"), style="bold yellow")
         panel_content.append("$ ", style="bold green")
         panel_content.append(command, style="bold white")
 
         if cwd:
             panel_content.append("\n\n", style="")
-            panel_content.append("📂 Working directory: ", style="dim")
+            panel_content.append(t("approval.working_directory"), style="dim")
             panel_content.append(cwd, style="dim cyan")
 
         # Use the common approval function (async version).
         # Internal queueing means parallel calls wait their turn here.
         confirmed, user_feedback = await get_user_approval_async(
-            title="Shell Command",
+            title=t("approval.shell_title"),
             content=panel_content,
             preview=None,
             border_style="dim white",

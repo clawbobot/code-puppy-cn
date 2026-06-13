@@ -62,6 +62,8 @@ Frequently used commands / 高频命令：
 Provider and model names come directly from the upstream models.dev registry.
 See [UPSTREAM.md](UPSTREAM.md) for synchronization and contribution guidance,
 and [docs/MVP_ACCEPTANCE.md](docs/MVP_ACCEPTANCE.md) for the validation flow.
+P0 release-gate validation is documented in
+[docs/P0_ACCEPTANCE.md](docs/P0_ACCEPTANCE.md).
 
 
 

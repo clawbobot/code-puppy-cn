@@ -225,10 +225,15 @@ def prompt_for_file_permission(
     if yolo_mode:
         return True, None
 
+    from code_puppy.i18n import t, t_or
+
     # Build panel content
     panel_content = RichText()
-    panel_content.append("🔒 Requesting permission to ", style="bold yellow")
-    panel_content.append(operation, style="bold cyan")
+    panel_content.append(t("approval.file_request"), style="bold yellow")
+    panel_content.append(
+        t_or(f"approval.operation.{operation}", operation),
+        style="bold cyan",
+    )
     panel_content.append(":\n", style="bold yellow")
     panel_content.append("📄 ", style="dim")
     panel_content.append(file_path, style="bold white")
@@ -237,7 +242,7 @@ def prompt_for_file_permission(
     # Internal queueing means parallel callers wait their turn here
     # rather than getting silently auto-rejected.
     return get_user_approval(
-        title="File Operation",
+        title=t("approval.file_title"),
         content=panel_content,
         preview=preview,
         border_style="dim white",

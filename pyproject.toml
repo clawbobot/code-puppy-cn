@@ -46,6 +46,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Topic :: Software Development :: Code Generators",
@@ -54,6 +55,7 @@ classifiers = [
 [project.optional-dependencies]
 bedrock = ["boto3>=1.35.0"]
 durable = ["dbos>=2.11.0"]
+google = ["pydantic-ai-slim[google]==1.56.0"]
 
 [project.urls]
 Upstream = "https://github.com/mpfaffenberger/code_puppy"

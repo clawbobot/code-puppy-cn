@@ -1,4 +1,5 @@
 import json
+import string
 
 
 def _point_config_to_tmp(monkeypatch, tmp_path):
@@ -38,6 +39,19 @@ def test_translation_catalog_keys_match():
     english = json.loads((root / "en-US.json").read_text(encoding="utf-8"))
     chinese = json.loads((root / "zh-CN.json").read_text(encoding="utf-8"))
     assert english.keys() == chinese.keys()
+    formatter = string.Formatter()
+    for key in english:
+        english_fields = {
+            field
+            for _, field, _, _ in formatter.parse(english[key])
+            if field is not None
+        }
+        chinese_fields = {
+            field
+            for _, field, _, _ in formatter.parse(chinese[key])
+            if field is not None
+        }
+        assert english_fields == chinese_fields, key
 
 
 def test_missing_key_and_format_parameter_do_not_crash(monkeypatch, tmp_path):
@@ -51,9 +65,18 @@ def test_missing_key_and_format_parameter_do_not_crash(monkeypatch, tmp_path):
 
 def test_help_descriptions_switch_to_chinese(monkeypatch, tmp_path):
     _point_config_to_tmp(monkeypatch, tmp_path)
+    from code_puppy import callbacks
     from code_puppy.command_line.command_handler import get_commands_help
     from code_puppy.i18n import set_locale
 
+    monkeypatch.setattr(
+        callbacks,
+        "on_custom_command_help",
+        lambda: [
+            [("plugins", "List, enable, or disable plugins")],
+            [("chatgpt-auth", "Authenticate with ChatGPT")],
+        ],
+    )
     set_locale("zh-CN")
     help_text = str(get_commands_help())
 

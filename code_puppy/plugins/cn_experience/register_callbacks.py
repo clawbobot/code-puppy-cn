@@ -9,10 +9,9 @@ from pathlib import Path
 from typing import Any
 
 from code_puppy.callbacks import register_callback
+from code_puppy.cn_setup import CHINA_PROVIDER_IDS
 from code_puppy.i18n import get_locale, set_locale, t
 from code_puppy.messaging import emit_error, emit_info, emit_success
-
-CHINA_PROVIDER_IDS = ("alibaba-cn", "deepseek", "moonshotai-cn", "zai")
 
 
 def _custom_help() -> list[tuple[str, str]]:
@@ -40,11 +39,13 @@ def _handle_language(command: str) -> bool:
 
 
 def _tool_models(registry, provider_id: str):
-    return [model for model in registry.get_models(provider_id) if model.tool_call]
+    from code_puppy.cn_setup import ranked_models
+
+    return ranked_models(registry, provider_id)
 
 
 def _handle_cn_setup(command: str) -> bool:
-    from code_puppy.command_line.add_model_menu import AddModelMenu
+    from code_puppy.cn_setup import configure_model, run_setup_wizard
     from code_puppy.models_dev_parser import ModelsDevRegistry
 
     try:
@@ -54,7 +55,18 @@ def _handle_cn_setup(command: str) -> bool:
         return True
 
     parts = command.split()
-    if len(parts) < 3:
+    if len(parts) == 1:
+        result = run_setup_wizard(registry)
+        if result.status == "configured":
+            emit_success(t("cn_setup.activated", model=result.model_key))
+        elif result.status == "non_interactive":
+            emit_error(t("cn_setup.non_interactive"))
+            emit_info(t("cn_setup.hint"))
+        elif result.status not in {"cancelled"}:
+            emit_error(t("cn_setup.failed", model=result.model_id or ""))
+        return True
+
+    if len(parts) < 3 or parts[1] in {"list", "--list"}:
         emit_info(t("cn_setup.title"))
         emit_info(t("cn_setup.source", source=registry.data_source))
         for provider_id in CHINA_PROVIDER_IDS:
@@ -82,34 +94,25 @@ def _handle_cn_setup(command: str) -> bool:
         return True
 
     provider_id, model_id = parts[1], parts[2]
-    provider = registry.get_provider(provider_id)
-    model = next(
-        (
-            item
-            for item in registry.get_models(provider_id)
-            if item.model_id == model_id
-        ),
-        None,
-    )
-    if provider is None or model is None:
+    result = configure_model(registry, provider_id, model_id)
+    if result.status == "not_found":
         emit_error(t("cn_setup.not_found", provider=provider_id, model=model_id))
         return True
-
-    menu = AddModelMenu.__new__(AddModelMenu)
-    if menu._add_model_to_extra_config(model, provider):
-        model_key = f"{provider.id}-{model.model_id}".replace("/", "-").replace(
-            ":", "-"
-        )
-        emit_success(t("cn_setup.added", model=model_key))
+    if result.status == "unsupported":
+        emit_error(t("cn_setup.unsupported", model=model_id))
+    elif result.status == "configured":
+        emit_success(t("cn_setup.activated", model=result.model_key))
     else:
         emit_error(t("cn_setup.failed", model=model_id))
     return True
 
 
-def _handle_doctor() -> bool:
+def _handle_doctor(command: str) -> bool:
     from code_puppy.cn_doctor import render_human, report
 
-    emit_info(render_human(report()))
+    parts = command.split()
+    live = "--live" in parts
+    emit_info(render_human(report(live=live)))
     return True
 
 
@@ -119,7 +122,7 @@ def _custom_command(command: str, name: str) -> bool | None:
     if name == "cn-setup":
         return _handle_cn_setup(command)
     if name == "doctor-cn":
-        return _handle_doctor()
+        return _handle_doctor(command)
     return None
 
 
