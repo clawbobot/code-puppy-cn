@@ -35,7 +35,7 @@
   "command.audit_status_desc": "查看企业审计连接状态",
   "enterprise.synced": "企业配置版本 {version} 已同步。",
   "enterprise.not_configured": "尚未配置企业模式。",
-  "enterprise.audit_status": "审计已启用：{enabled}；最近同步：{last_sync}",
+  "enterprise.audit_status": "企业模式：{enabled}；最近同步：{last_sync}；最近心跳：{last_heartbeat}；最近审计上报：{last_audit}",
   "commands.help": "显示帮助信息",
   "commands.cd": "切换目录或显示目录列表",
   "commands.tools": "显示可用工具和能力",

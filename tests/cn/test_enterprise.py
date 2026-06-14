@@ -73,3 +73,101 @@ def test_expired_config_fails_closed(enterprise_home):
     )
     with pytest.raises(RuntimeError, match="expired"):
         enterprise.get_config()
+
+
+def test_heartbeat_reports_client_and_config_version(enterprise_home, monkeypatch):
+    enterprise._write(
+        enterprise.state_path(),
+        {
+            "server_url": "https://gateway.example",
+            "access_token": "secret",
+            "enabled": True,
+            "device_id": "device-1",
+        },
+    )
+    enterprise._write(
+        enterprise.config_path(),
+        {
+            "version": 7,
+            "expires_at": (
+                datetime.now(timezone.utc) + timedelta(hours=1)
+            ).isoformat(),
+        },
+    )
+    captured = {}
+
+    class Response:
+        status_code = 200
+
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {"status": "ok"}
+
+    def post(url, **kwargs):
+        captured["url"] = url
+        captured["json"] = kwargs["json"]
+        return Response()
+
+    monkeypatch.setattr("httpx.post", post)
+    assert enterprise.heartbeat()["status"] == "ok"
+    assert captured["url"].endswith("/v1/client/heartbeat")
+    assert captured["json"]["device_id"] == "device-1"
+    assert captured["json"]["config_version"] == 7
+    assert enterprise.status()["last_heartbeat"]
+
+
+def test_heartbeat_refreshes_expired_access_token(enterprise_home, monkeypatch):
+    enterprise._write(
+        enterprise.state_path(),
+        {
+            "server_url": "https://gateway.example",
+            "access_token": "expired",
+            "refresh_token": "refresh",
+            "enabled": True,
+            "device_id": "device-1",
+        },
+    )
+    enterprise._write(
+        enterprise.config_path(),
+        {
+            "version": 7,
+            "expires_at": (
+                datetime.now(timezone.utc) + timedelta(hours=1)
+            ).isoformat(),
+        },
+    )
+    calls = []
+
+    class Response:
+        def __init__(self, status_code, payload):
+            self.status_code = status_code
+            self.payload = payload
+
+        def raise_for_status(self):
+            if self.status_code >= 400:
+                raise AssertionError(self.status_code)
+
+        def json(self):
+            return self.payload
+
+    def post(url, **kwargs):
+        calls.append((url, kwargs))
+        if url.endswith("/v1/device/refresh"):
+            return Response(
+                200,
+                {
+                    "access_token": "renewed",
+                    "refresh_token": "next-refresh",
+                    "device_id": "device-1",
+                },
+            )
+        if kwargs["headers"]["Authorization"] == "Bearer expired":
+            return Response(401, {})
+        return Response(200, {"status": "ok"})
+
+    monkeypatch.setattr("httpx.post", post)
+    assert enterprise.heartbeat()["status"] == "ok"
+    assert enterprise.get_state()["access_token"] == "renewed"
+    assert len(calls) == 3

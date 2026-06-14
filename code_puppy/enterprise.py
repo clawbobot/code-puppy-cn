@@ -86,6 +86,22 @@ def _headers(state: dict[str, Any]) -> dict[str, str]:
     return {"Authorization": f"Bearer {state['access_token']}"}
 
 
+def refresh_access_token() -> dict[str, Any]:
+    state = get_state()
+    if not state.get("refresh_token"):
+        raise RuntimeError("Enterprise refresh token is unavailable; log in again.")
+    refreshed = httpx.post(
+        f"{state['server_url']}/v1/device/refresh",
+        json={"refresh_token": state["refresh_token"]},
+        timeout=15,
+    )
+    refreshed.raise_for_status()
+    state.update(refreshed.json())
+    _write(state_path(), state)
+    os.environ[TOKEN_ENV] = state["access_token"]
+    return state
+
+
 def login(server: str, dev_subject: str | None = None) -> dict[str, Any]:
     server = server.rstrip("/")
     with httpx.Client(timeout=15) as client:
@@ -124,6 +140,7 @@ def login(server: str, dev_subject: str | None = None) -> dict[str, Any]:
                 _write(state_path(), state)
                 os.environ[TOKEN_ENV] = state["access_token"]
                 sync()
+                heartbeat()
                 return state
             if token.status_code != 428:
                 token.raise_for_status()
@@ -141,15 +158,7 @@ def sync() -> dict[str, Any]:
         timeout=15,
     )
     if response.status_code == 401 and state.get("refresh_token"):
-        refreshed = httpx.post(
-            f"{state['server_url']}/v1/device/refresh",
-            json={"refresh_token": state["refresh_token"]},
-            timeout=15,
-        )
-        refreshed.raise_for_status()
-        state.update(refreshed.json())
-        _write(state_path(), state)
-        os.environ[TOKEN_ENV] = state["access_token"]
+        state = refresh_access_token()
         response = httpx.get(
             f"{state['server_url']}/v1/client/config",
             headers=_headers(state),
@@ -181,6 +190,51 @@ def sync() -> dict[str, Any]:
         Path(CONFIG_DIR).mkdir(parents=True, exist_ok=True)
         set_model_name(document["models"][0]["alias"])
     return document
+
+
+def heartbeat() -> dict[str, Any]:
+    state = get_state()
+    if not state.get("access_token") or not state.get("device_id"):
+        raise RuntimeError("Not logged in. Run `pup-cn enterprise login`.")
+    config = get_config(require_valid=False)
+    response = httpx.post(
+        f"{state['server_url']}/v1/client/heartbeat",
+        headers=_headers(state),
+        json={
+            "device_id": state["device_id"],
+            "client_version": __version__,
+            "config_version": config.get("version", 0),
+        },
+        timeout=10,
+    )
+    if response.status_code == 401 and state.get("refresh_token"):
+        state = refresh_access_token()
+        response = httpx.post(
+            f"{state['server_url']}/v1/client/heartbeat",
+            headers=_headers(state),
+            json={
+                "device_id": state["device_id"],
+                "client_version": __version__,
+                "config_version": config.get("version", 0),
+            },
+            timeout=10,
+        )
+    response.raise_for_status()
+    result = response.json()
+    state["last_heartbeat"] = datetime.now(timezone.utc).isoformat()
+    state.pop("heartbeat_error", None)
+    _write(state_path(), state)
+    return result
+
+
+def record_delivery_status(kind: str, error: str | None = None) -> None:
+    state = get_state()
+    state[f"last_{kind}"] = datetime.now(timezone.utc).isoformat()
+    if error:
+        state[f"{kind}_error"] = error[:500]
+    else:
+        state.pop(f"{kind}_error", None)
+    _write(state_path(), state)
 
 
 def logout() -> None:
@@ -236,6 +290,10 @@ def status() -> dict[str, Any]:
         "config_expires_at": config.get("expires_at"),
         "models": [item.get("alias") for item in config.get("models", [])],
         "last_sync": state.get("synced_at"),
+        "last_heartbeat": state.get("last_heartbeat"),
+        "heartbeat_error": state.get("heartbeat_error"),
+        "last_audit": state.get("last_audit"),
+        "audit_error": state.get("audit_error"),
     }
 
 
@@ -257,6 +315,7 @@ def cli_main(argv: list[str] | None = None) -> int:
             print(json.dumps(status(), ensure_ascii=False, indent=2))
         elif args.command == "sync":
             config = sync()
+            heartbeat()
             print(f"Enterprise configuration version {config['version']} synchronized.")
         elif args.command == "logout":
             logout()

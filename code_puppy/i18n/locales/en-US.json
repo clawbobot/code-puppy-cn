@@ -35,7 +35,7 @@
   "command.audit_status_desc": "View enterprise audit connection status",
   "enterprise.synced": "Enterprise configuration version {version} synchronized.",
   "enterprise.not_configured": "Enterprise mode is not configured.",
-  "enterprise.audit_status": "Audit enabled: {enabled}; last sync: {last_sync}",
+  "enterprise.audit_status": "Enterprise mode: {enabled}; last sync: {last_sync}; last heartbeat: {last_heartbeat}; last audit delivery: {last_audit}",
   "commands.help": "Show this help message",
   "commands.cd": "Change directory or show directories",
   "commands.tools": "Show available tools and capabilities",
