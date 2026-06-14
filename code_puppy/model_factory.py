@@ -531,6 +531,9 @@ class ModelFactory:
         API key validation happens naturally within each model type's initialization,
         which emits warnings and returns None if keys are missing.
         """
+        from code_puppy.enterprise import enforce_model
+
+        enforce_model(model_name)
         model_config = config.get(model_name)
         if not model_config:
             raise ValueError(f"Model '{model_name}' not found in configuration.")

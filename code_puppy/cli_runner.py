@@ -1115,6 +1115,10 @@ def _force_utf8_stdio():
 def main_entry():
     """Entry point for the installed CLI tool."""
     _force_utf8_stdio()
+    if len(sys.argv) > 1 and sys.argv[1] == "enterprise":
+        from code_puppy.enterprise import cli_main
+
+        return cli_main(sys.argv[2:])
     try:
         asyncio.run(main())
     except KeyboardInterrupt:

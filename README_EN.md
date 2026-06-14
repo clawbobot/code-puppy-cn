@@ -130,6 +130,33 @@ The models shown by the setup wizard are the source of truth for current availab
 
 Run `/help` in the interactive interface for the complete command list included in your installed version.
 
+## Enterprise Mode
+
+When connected to Code Puppy Enterprise, the client uses device authorization,
+verifies platform-signed configuration, and routes work only through approved
+enterprise models. Endpoints, credentials, policies, budgets, and audit rules
+are managed by the platform.
+
+```bash
+pup-cn enterprise login --server https://ai-gateway.example.com
+pup-cn enterprise status
+pup-cn enterprise sync
+pup-cn enterprise logout
+```
+
+Interactive commands:
+
+| Command | Description |
+| --- | --- |
+| `/enterprise` | View enterprise connection and configuration status |
+| `/enterprise sync` | Synchronize signed configuration immediately |
+| `/policy` | View the active enterprise policy |
+| `/usage` | View model usage visible to the current user |
+| `/audit-status` | View the audit connection status |
+
+The client fails closed when enterprise configuration expires or signature
+verification fails, preventing a local model from bypassing the gateway.
+
 ## Diagnostics
 
 Run diagnostics directly from your terminal:

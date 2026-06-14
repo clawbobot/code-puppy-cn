@@ -130,6 +130,29 @@ pup-cn
 
 在交互界面中运行 `/help`，可以查看当前版本提供的完整命令列表。
 
+## 企业模式
+
+连接 Code Puppy Enterprise 后，客户端会通过设备授权登录，校验平台签名的配置，并仅使用平台批准的模型网关。模型 Endpoint、凭证、策略、预算和审计规则由企业平台统一下发。
+
+```bash
+pup-cn enterprise login --server https://ai-gateway.example.com
+pup-cn enterprise status
+pup-cn enterprise sync
+pup-cn enterprise logout
+```
+
+交互界面还提供：
+
+| 命令 | 说明 |
+| --- | --- |
+| `/enterprise` | 查看企业连接和配置状态 |
+| `/enterprise sync` | 立即同步签名配置 |
+| `/policy` | 查看当前企业策略 |
+| `/usage` | 查看个人可见的模型用量 |
+| `/audit-status` | 查看审计连接状态 |
+
+企业配置过期或验签失败时，客户端默认停止企业模型任务，避免绕过平台网关。
+
 ## 诊断工具
 
 除了交互命令，也可以直接在终端运行诊断：
