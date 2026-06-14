@@ -1,828 +1,244 @@
 <div align="center">
+  <img src="code_puppy.png" alt="Code Puppy CN" width="160">
 
-![Code Puppy Logo](code_puppy.png)
+  # Code Puppy CN
 
-## Code Puppy CN
+  **为中文开发者优化的双语终端 AI 编程助手**
 
-**Code Puppy 的中英文双语发行版**
+  [English](README_EN.md) | 简体中文
 
-[![Version](https://img.shields.io/badge/version-0.1.0--MVP-purple)](pyproject.toml)
-[![Python](https://img.shields.io/badge/Python-3.11--3.14-blue)](https://python.org)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![Upstream](https://img.shields.io/badge/upstream-Code%20Puppy-blue)](https://github.com/mpfaffenberger/code_puppy)
-
+  [![CI](https://github.com/clawbobot/code-puppy-cn/actions/workflows/ci.yml/badge.svg)](https://github.com/clawbobot/code-puppy-cn/actions/workflows/ci.yml)
+  [![Python](https://img.shields.io/badge/Python-3.11--3.14-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+  [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 </div>
 
----
+Code Puppy CN 是一个运行在终端中的 AI 编程助手。它能够理解项目、编辑文件、执行命令和测试，并为中国区常用模型提供更顺畅的配置、诊断与中文交互体验。
 
-> Status: pre-release MVP. The first public release will be published after
-> cross-platform and live-provider acceptance is complete.
+项目支持随时切换简体中文和英文，同时保留 Code Puppy 的 Agent、Skills、MCP 与模型扩展能力。
 
-Code Puppy CN is a thin MIT-licensed distribution of Code Puppy for teams that
-need a Chinese/English interface and easier access to providers available in
-China. It preserves the upstream runtime, models.dev registry, model names,
-agents, MCP manager, and skills system.
+## 核心能力
 
-Code Puppy CN 是 Code Puppy 的轻量双语发行版，面向需要中英文界面以及更便捷接入
-中国可用模型的个人和企业用户。项目不复制上游 Provider、模型、Agent、MCP 或
-Skills 能力，也不会增加 `cn-` 模型别名。
+- **自然语言编程**：分析代码、定位问题、实现功能、重构并补充测试。
+- **完整任务闭环**：读取项目、修改文件、运行 Shell 命令和测试、总结结果。
+- **双语界面**：首次启动自动检测系统语言，运行中可立即切换中文或英文。
+- **模型快速配置**：引导配置通义、DeepSeek、Kimi 和 GLM 等中国区常用模型。
+- **环境诊断**：检查运行环境、网络、凭证、Endpoint 与模型工具调用能力。
+- **可扩展工作流**：兼容 Code Puppy 的 Agent、Skill、MCP 和插件机制。
+- **跨平台运行**：支持 macOS、Linux 和 Windows。
 
-## MVP capabilities / MVP 能力
+## 环境要求
 
-- Immediate `zh-CN` / `en-US` interface switching.
-- Localized startup, help, setup, confirmation, error, and diagnostic paths.
-- `/cn-setup` backed by the upstream models.dev registry.
-- `/doctor-cn` and `pup-cn-doctor --json` with redacted diagnostics.
-- The same upstream Agent Runtime, model names, MCP manager, and skills system.
+- Python 3.11 至 3.14
+- Git
+- [uv](https://docs.astral.sh/uv/)
+- 至少一个模型服务商的 API Key
 
-## Local installation / 本地安装
+## 安装
+
+### 1. 安装 uv
+
+macOS 或 Linux：
 
 ```bash
-# Install from this source checkout / 从当前源码目录安装
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Windows PowerShell：
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+### 2. 安装 Code Puppy CN
+
+```bash
+git clone https://github.com/clawbobot/code-puppy-cn.git
+cd code-puppy-cn
 uv tool install --force .
+```
 
-# Optional Google Gemini and Vertex support
-uv tool install --force --with "pydantic-ai-slim[google]==1.56.0" .
+如果终端提示命令不在 `PATH` 中，请执行：
 
-# Start / 启动
+```bash
+uv tool update-shell
+```
+
+重新打开终端后验证安装：
+
+```bash
+pup-cn --version
+```
+
+## 快速开始
+
+启动 Code Puppy CN：
+
+```bash
 pup-cn
+```
 
-# Machine-readable diagnostics / 机器可读诊断
+首次启动时，程序会根据系统语言推荐中文或英文。进入主界面后，运行：
+
+```text
+/cn-setup
+```
+
+根据向导选择服务商和模型，输入对应的 API Key。配置完成后，即可直接描述开发任务，例如：
+
+```text
+分析这个项目，修复当前失败的测试，并说明修改原因。
+```
+
+任务完成后可以运行诊断：
+
+```text
+/doctor-cn
+```
+
+## 支持的模型服务
+
+配置向导会从模型注册表获取最新可用模型，并优先展示支持工具调用、适合编码任务的选项。
+
+| 服务商 | 常见模型系列 | 配置入口 |
+| --- | --- | --- |
+| 阿里云百炼 | Qwen / 通义千问 | `/cn-setup` |
+| DeepSeek | DeepSeek Chat / Reasoner | `/cn-setup` |
+| Moonshot AI | Kimi | `/cn-setup` |
+| 智谱 Z.AI | GLM | `/cn-setup` |
+
+实际可选模型以配置向导显示的最新列表为准。
+
+## 常用命令
+
+| 命令 | 说明 |
+| --- | --- |
+| `/help` | 查看所有可用命令 |
+| `/cn-setup` | 交互式配置中国区常用模型 |
+| `/cn-setup list` | 查看支持的服务商与推荐模型 |
+| `/language` | 查看当前语言和切换方式 |
+| `/language zh-CN` | 切换为简体中文 |
+| `/language en-US` | 切换为英文 |
+| `/语言` | 查看当前语言和切换方式 |
+| `/doctor-cn` | 检查本地环境和模型配置 |
+| `/doctor-cn --live` | 通过最小真实请求验证模型连接 |
+| `/model` | 查看或切换当前模型 |
+| `/agents` | 查看和切换 Agent |
+| `/skills` | 查看可用 Skills |
+| `/mcp` | 管理 MCP 服务 |
+| `/diff` | 配置代码差异的高亮颜色 |
+| `/session` | 管理会话 |
+
+在交互界面中运行 `/help`，可以查看当前版本提供的完整命令列表。
+
+## 诊断工具
+
+除了交互命令，也可以直接在终端运行诊断：
+
+```bash
+pup-cn-doctor
+```
+
+输出适合自动化处理的 JSON：
+
+```bash
 pup-cn-doctor --json
 ```
 
-Frequently used commands / 高频命令：
-
-- `/language`, `/language zh-CN`, `/language en-US`, `/语言`
-- `/cn-setup` discovers models from `alibaba-cn`, `deepseek`, `moonshotai-cn`,
-  and `zai`
-- `/doctor-cn` runs localized environment and compatibility diagnostics
-
-Provider and model names come directly from the upstream models.dev registry.
-See [UPSTREAM.md](UPSTREAM.md) for synchronization and contribution guidance,
-the [MVP acceptance guide](docs/MVP_ACCEPTANCE.md) for the validation flow, and
-the [P0 release gate](docs/P0_ACCEPTANCE.md) for release requirements.
-
-Security issues should follow [SECURITY.md](SECURITY.md). Contributions should
-follow [CONTRIBUTING.md](CONTRIBUTING.md).
-
----
-
-## Upstream documentation
-
-*This project was coded angrily in reaction to Windsurf and Cursor removing access to models and raising prices.*
-
-*You could also run 50 code puppies at once if you were insane enough.*
-
-*Would you rather plow a field with one ox or 1024 puppies?*
-    - If you pick the ox, better slam that back button in your browser.
-
-
-Code Puppy is an AI-powered code generation agent, designed to understand programming tasks, generate high-quality code, and explain its reasoning similar to tools like Windsurf and Cursor.
-
-
-## Quick start
+执行最小真实模型调用：
 
 ```bash
-uvx code-puppy -i
-````
+pup-cn-doctor --live
+```
 
-## Installation
-
-### UV (Recommended)
-
-#### macOS / Linux
+其他常用参数：
 
 ```bash
-# Install UV if you don't have it
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-uvx code-puppy
+pup-cn-doctor --no-network
+pup-cn-doctor --model <model-id>
+pup-cn-doctor --timeout 15
 ```
 
-#### Windows
+诊断报告会对敏感信息进行脱敏，但仍建议在分享前检查输出内容。
 
-On Windows, we recommend installing code-puppy as a global tool for the best experience with keyboard shortcuts (Ctrl+C/Ctrl+X cancellation):
+## 使用示例
 
-```powershell
-# Install UV if you don't have it (run in PowerShell as Admin)
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+Code Puppy CN 适合处理从代码理解到验证交付的完整任务：
 
-uvx code-puppy
+```text
+阅读当前项目并解释主要模块。
 ```
 
-#### Optional: DBOS durable execution
+```text
+为用户登录接口增加参数校验，并补充单元测试。
+```
 
-Code Puppy ships with an optional [DBOS](https://github.com/dbos-inc/dbos-transact-py)-backed
-durable-execution plugin that survives crashes and lets you resume long agent runs.
-It's **off by default in the dependency tree** — install the `durable` extra to opt in:
+```text
+找出测试失败的原因，修复问题并重新运行测试。
+```
+
+```text
+检查当前 Git diff，指出可能的回归风险。
+```
+
+执行文件修改、Shell 命令或其他敏感操作前，程序会根据当前权限设置请求确认。
+
+## Google Gemini 与 Vertex AI
+
+如需使用 Google Gemini 或 Vertex AI，请安装 Google 可选依赖：
 
 ```bash
-pip install "code-puppy[durable]"
-# or
-uv pip install "code-puppy[durable]"
+cd code-puppy-cn
+uv tool install --force --with "pydantic-ai-slim[google]==1.56.0" .
 ```
 
-Then toggle it from inside the app via `/dbos on` (and restart). Use `/dbos status`
-to check, `/dbos off` to disable.
+之后可通过现有模型配置流程添加并选择 Google 模型。Vertex AI 还需要在本地配置有效的 Google Cloud 项目、区域和应用默认凭证。
 
-## Changelog (By Kittylog!)
+## 配置与安全
 
-[📋 View the full changelog on Kittylog](https://kittylog.app/c/mpfaffenberger/code_puppy)
+- API Key 和本地偏好设置保存在用户配置目录中。
+- 不要把 API Key、云凭证或包含敏感信息的配置文件提交到 Git。
+- 建议使用环境变量或交互式配置向导录入凭证。
+- 公开分享日志和诊断报告前，请再次确认其中不包含业务代码或内部地址。
+- 如果密钥曾出现在聊天、终端历史或公开仓库中，请立即前往对应服务商控制台轮换。
 
-## Usage
-
-### Adding Models from models.dev 🆕
-
-While there are several models configured right out of the box from providers like Synthetic, Cerebras, OpenAI, Google, and Anthropic, Code Puppy integrates with [models.dev](https://models.dev) to let you browse and add models from **65+ providers** with a single command:
+## 从源码开发
 
 ```bash
-/add_model
+git clone https://github.com/clawbobot/code-puppy-cn.git
+cd code-puppy-cn
+uv sync --all-groups
+uv run pytest
 ```
 
-This opens an interactive TUI where you can:
-- **Browse providers** - See all available AI providers (OpenAI, Anthropic, Groq, Mistral, xAI, Cohere, Perplexity, DeepInfra, and many more)
-- **Preview model details** - View capabilities, pricing, context length, and features
-- **One-click add** - Automatically configures the model with correct endpoints and API keys
-
-#### Live API with Offline Fallback
-
-The `/add_model` command fetches the latest model data from models.dev in real-time. If the API is unavailable, it falls back to a bundled database:
-
-```
-📡 Fetched latest models from models.dev     # Live API
-📦 Using bundled models database              # Offline fallback
-```
-
-#### Supported Providers
-
-Code Puppy integrates with https://models.dev giving you access to 65 providers and >1000 different model offerings.
-
-There are **39+ additional providers** that already have OpenAI-compatible APIs configured in models.dev!
-
-These providers are automatically configured with correct OpenAI-compatible endpoints, but have **not** been tested thoroughly:
-
-| Provider | Endpoint | API Key Env Var |
-|----------|----------|----------------|
-| **xAI** (Grok) | `https://api.x.ai/v1` | `XAI_API_KEY` |
-| **Groq** | `https://api.groq.com/openai/v1` | `GROQ_API_KEY` |
-| **Mistral** | `https://api.mistral.ai/v1` | `MISTRAL_API_KEY` |
-| **Together AI** | `https://api.together.xyz/v1` | `TOGETHER_API_KEY` |
-| **Perplexity** | `https://api.perplexity.ai` | `PERPLEXITY_API_KEY` |
-| **DeepInfra** | `https://api.deepinfra.com/v1/openai` | `DEEPINFRA_API_KEY` |
-| **Cohere** | `https://api.cohere.com/compatibility/v1` | `COHERE_API_KEY` |
-| **AIHubMix** | `https://aihubmix.com/v1` | `AIHUBMIX_API_KEY` |
-
-#### Smart Warnings
-
-- **⚠️ Unsupported Providers** - Providers like Amazon Bedrock and Google Vertex that require special authentication are clearly marked
-- **⚠️ No Tool Calling** - Models without tool calling support show a big warning since they can't use Code Puppy's file/shell tools
-
-### Durable Execution
-
-Code Puppy now supports **[DBOS](https://github.com/dbos-inc/dbos-transact-py)** durable execution.
-
-When enabled, every agent is automatically wrapped as a `DBOSAgent`, checkpointing key interactions (including agent inputs, LLM responses, MCP calls, and tool calls) in a database for durability and recovery.
-
-You can toggle DBOS via either of these options:
-
-- CLI config (persists): `/set enable_dbos false` to disable (enabled by default)
-
-
-Config takes precedence if set; otherwise the environment variable is used.
-
-### Configuration
-
-The following environment variables control DBOS behavior:
-- `DBOS_CONDUCTOR_KEY`: If set, Code Puppy connects to the [DBOS Management Console](https://console.dbos.dev/). Make sure you first register an app named `dbos-code-puppy` on the console to generate a Conductor key. Default: `None`.
-- `DBOS_LOG_LEVEL`: Logging verbosity: `CRITICAL`, `ERROR`, `WARNING`, `INFO`, or `DEBUG`. Default: `ERROR`.
-- `DBOS_SYSTEM_DATABASE_URL`: Database URL used by DBOS. Can point to a local SQLite file or a Postgres instance. Example: `postgresql://postgres:dbos@localhost:5432/postgres`. Default: `dbos_store.sqlite` file in the config directory.
-- `DBOS_APP_VERSION`: If set, Code Puppy uses it as the [DBOS application version](https://docs.dbos.dev/architecture#application-and-workflow-versions) and automatically tries to recover pending workflows for this version. Default: Code Puppy version + Unix timestamp in millisecond (disable automatic recovery).
-
-### Custom Commands
-Create markdown files in `.claude/commands/`, `.github/prompts/`, or `.agents/commands/` to define custom slash commands. The filename becomes the command name and the content runs as a prompt.
+运行本地版本：
 
 ```bash
-# Create a custom command
-echo "# Code Review
-
-Please review this code for security issues." > .claude/commands/review.md
-
-# Use it in Code Puppy
-/review with focus on authentication
+uv run pup-cn
 ```
 
-## Requirements
-
-- Python 3.11+
-- OpenAI API key (for GPT models)
-- Gemini API key (for Google's Gemini models)
-- Cerebras API key (for Cerebras models)
-- Anthropic key (for Claude models)
-- Ollama endpoint available
-
-## Agent Rules
-
-Code Puppy supports `AGENTS.md` files for defining coding standards, project conventions, and behavioral guidelines that the AI should follow. These rules can cover formatting, naming conventions, architectural patterns, and project-specific instructions.
-
-For examples and more information about agent rules, visit [https://agent.md](https://agent.md)
-
-### AGENTS.md Search Order
-
-Code Puppy loads rules from multiple locations, combining them in order:
-
-| Priority | Location | Purpose |
-|----------|----------|----------|
-| 1 | `~/.code_puppy/AGENTS.md` | Global rules (applied to all projects) |
-| 2 | `.code_puppy/AGENTS.md` | Project rules (preferred location) |
-| 3 | `./AGENTS.md` | Project rules (alternate location) |
-
-**Key behaviors:**
-- Global and project rules are **combined** (global first, then project)
-- `.code_puppy/` directory takes **precedence** over project root
-- All filename variants are supported: `AGENTS.md`, `AGENT.md`, `agents.md`, `agent.md`
-
-## Using MCP Servers for External Tools
-
-Use the `/mcp` command to manage MCP (list, start, stop, status, etc.)
-
-## Round Robin Model Distribution
-
-Code Puppy supports **Round Robin model distribution** to help you overcome rate limits and distribute load across multiple AI models. This feature automatically cycles through configured models with each request, maximizing your API usage while staying within rate limits.
-
-### Configuration
-Add a round-robin model configuration to your `~/.code_puppy/extra_models.json` file:
+构建发行包：
 
 ```bash
-export CEREBRAS_API_KEY1=csk-...
-export CEREBRAS_API_KEY2=csk-...
-export CEREBRAS_API_KEY3=csk-...
-
+uv build
 ```
 
-```json
-{
-  "qwen1": {
-    "type": "cerebras",
-    "name": "qwen-3-coder-480b",
-    "custom_endpoint": {
-      "url": "https://api.cerebras.ai/v1",
-      "api_key": "$CEREBRAS_API_KEY1"
-    },
-    "context_length": 131072
-  },
-  "qwen2": {
-    "type": "cerebras",
-    "name": "qwen-3-coder-480b",
-    "custom_endpoint": {
-      "url": "https://api.cerebras.ai/v1",
-      "api_key": "$CEREBRAS_API_KEY2"
-    },
-    "context_length": 131072
-  },
-  "qwen3": {
-    "type": "cerebras",
-    "name": "qwen-3-coder-480b",
-    "custom_endpoint": {
-      "url": "https://api.cerebras.ai/v1",
-      "api_key": "$CEREBRAS_API_KEY3"
-    },
-    "context_length": 131072
-  },
-  "cerebras_round_robin": {
-    "type": "round_robin",
-    "models": ["qwen1", "qwen2", "qwen3"],
-    "rotate_every": 5
-  }
-}
-```
+## 项目关系
 
-Then just use /model and tab to select your round-robin model!
+Code Puppy CN 基于开源项目 [Code Puppy](https://github.com/mpfaffenberger/code_puppy) 构建，并持续跟进上游能力。这个发行版重点改善中文界面、中国区模型配置、连接诊断和本地使用体验。
 
-The `rotate_every` parameter controls how many requests are made to each model before rotating to the next one. In this example, the round-robin model will use each Qwen model for 5 consecutive requests before moving to the next model in the sequence.
+感谢 Code Puppy 作者及所有开源贡献者。
 
-## Custom Model Timeouts
+## 参与贡献
 
-For custom model endpoints (`custom_openai`, `custom_anthropic`, `custom_gemini`, `cerebras`), you can configure custom timeout values to handle slow or unreliable endpoints. The default timeout for these custom endpoint models is 180 seconds.
+欢迎通过 [Issues](https://github.com/clawbobot/code-puppy-cn/issues) 报告问题、提出功能建议或提交改进。
 
-**Note:** Other model types have different default timeouts:
-- ChatGPT/Codex models: 300 seconds (5 minutes)
-- Regular Anthropic models: 180 seconds
-- Gemini models: 180 seconds
+提交代码前，请确保：
 
-### Configuration
-Add a `timeout` field to your model configuration in `~/.code_puppy/extra_models.json`:
-
-```json
-{
-  "slow_model": {
-    "type": "custom_openai",
-    "name": "gpt-4",
-    "custom_endpoint": {
-      "url": "https://slow-endpoint.example.com/v1",
-      "api_key": "$API_KEY",
-      "timeout": 600
-    }
-  },
-  "fast_model": {
-    "type": "cerebras", 
-    "name": "llama3.1-8b",
-    "custom_endpoint": {
-      "url": "https://api.cerebras.ai/v1",
-      "api_key": "$CEREBRAS_API_KEY"
-    },
-    "timeout": 300
-  }
-}
-```
-
-The `timeout` value can be specified either:
-- Inside the `custom_endpoint` object (recommended for endpoint-specific timeouts)
-- At the top level of the model config (affects all custom endpoint types)
-
-Timeout values must be positive numbers (integers or floats) representing seconds. If no timeout is specified, the default 180-second timeout is used for custom endpoint models.
-
----
-
-## Create your own Agent!!!
-
-Code Puppy features a flexible agent system that allows you to work with specialized AI assistants tailored for different coding tasks. The system supports both built-in Python agents and custom JSON agents that you can create yourself.
-
-## Quick Start
-
-### Check Current Agent
 ```bash
-/agent
-```
-Shows current active agent and all available agents
-
-### Switch Agent
-```bash
-/agent <agent-name>
-```
-Switches to the specified agent
-
-### Create New Agent
-```bash
-/agent agent-creator
-```
-Switches to the Agent Creator for building custom agents
-
-### Truncate Message History
-```bash
-/truncate <N>
-```
-Truncates the message history to keep only the N most recent messages while protecting the first (system) message. For example:
-```bash
-/truncate 20
-```
-Would keep the system message plus the 19 most recent messages, removing older ones from the history.
-
-This is useful for managing context length when you have a long conversation history but only need the most recent interactions.
-
-## Available Agents
-
-### Code-Puppy 🐶 (Default)
-- **Name**: `code-puppy`
-- **Specialty**: General-purpose coding assistant
-- **Personality**: Playful, sarcastic, pedantic about code quality
-- **Tools**: Full access to all tools
-- **Best for**: All coding tasks, file management, execution
-- **Principles**: Clean, concise code following YAGNI, SRP, DRY principles
-- **File limit**: Max 600 lines per file (enforced!)
-
-### Agent Creator 🏗️
-- **Name**: `agent-creator`
-- **Specialty**: Creating custom JSON agent configurations
-- **Tools**: File operations, reasoning
-- **Best for**: Building new specialized agents
-- **Features**: Schema validation, guided creation process
-
-## Agent Types
-
-### Python Agents
-Built-in agents implemented in Python with full system integration:
-- Discovered automatically from `code_puppy/agents/` directory
-- Inherit from `BaseAgent` class
-- Full access to system internals
-- Examples: `code-puppy`, `agent-creator`
-
-### JSON Agents
-User-created agents defined in JSON files:
-- Stored in user's agents directory
-- Easy to create, share, and modify
-- Schema-validated configuration
-- Custom system prompts and tool access
-
-## Creating Custom JSON Agents
-
-### Using Agent Creator (Recommended)
-
-1. **Switch to Agent Creator**:
-   ```bash
-   /agent agent-creator
-   ```
-
-2. **Request agent creation**:
-   ```
-   I want to create a Python tutor agent
-   ```
-
-3. **Follow guided process** to define:
-   - Name and description
-   - Available tools
-   - System prompt and behavior
-   - Custom settings
-
-4. **Test your new agent**:
-   ```bash
-   /agent your-new-agent-name
-   ```
-
-### Manual JSON Creation
-
-Create JSON files in your agents directory following this schema:
-
-```json
-{
-  "name": "agent-name",              // REQUIRED: Unique identifier (kebab-case)
-  "display_name": "Agent Name 🤖",   // OPTIONAL: Pretty name with emoji
-  "description": "What this agent does", // REQUIRED: Clear description
-  "system_prompt": "Instructions...",    // REQUIRED: Agent instructions
-  "tools": ["tool1", "tool2"],        // REQUIRED: Array of tool names
-  "user_prompt": "How can I help?",     // OPTIONAL: Custom greeting
-  "tools_config": {                    // OPTIONAL: Tool configuration
-    "timeout": 60
-  }
-}
+uv run pytest
+uv build
 ```
 
-#### Required Fields
-- **`name`**: Unique identifier (kebab-case, no spaces)
-- **`description`**: What the agent does
-- **`system_prompt`**: Agent instructions (string or array)
-- **`tools`**: Array of available tool names
+## 许可证
 
-#### Optional Fields
-- **`display_name`**: Pretty display name (defaults to title-cased name + 🤖)
-- **`user_prompt`**: Custom user greeting
-- **`tools_config`**: Tool configuration object
-
-## Available Tools
-
-Agents can access these tools based on their configuration:
-
-- **`list_files`**: Directory and file listing
-- **`read_file`**: File content reading
-- **`grep`**: Text search across files
-- **`create_file`**: Create new files or overwrite existing ones
-- **`replace_in_file`**: Targeted text replacements in existing files
-- **`delete_snippet`**: Remove a text snippet from a file
-- **`delete_file`**: File deletion
-- **`agent_run_shell_command`**: Shell command execution
-- **`agent_share_your_reasoning`**: Share reasoning with user
-
-### Tool Access Examples
-- **Read-only agent**: `["list_files", "read_file", "grep"]`
-- **File editor agent**: `["list_files", "read_file", "create_file", "replace_in_file"]`
-- **Full access agent**: All tools (like Code-Puppy)
-
-## System Prompt Formats
-
-### String Format
-```json
-{
-  "system_prompt": "You are a helpful coding assistant that specializes in Python development."
-}
-```
-
-### Array Format (Recommended)
-```json
-{
-  "system_prompt": [
-    "You are a helpful coding assistant.",
-    "You specialize in Python development.",
-    "Always provide clear explanations.",
-    "Include practical examples in your responses."
-  ]
-}
-```
-
-## Example JSON Agents
-
-### Python Tutor
-```json
-{
-  "name": "python-tutor",
-  "display_name": "Python Tutor 🐍",
-  "description": "Teaches Python programming concepts with examples",
-  "system_prompt": [
-    "You are a patient Python programming tutor.",
-    "You explain concepts clearly with practical examples.",
-    "You help beginners learn Python step by step.",
-    "Always encourage learning and provide constructive feedback."
-  ],
-  "tools": ["read_file", "create_file", "replace_in_file", "agent_share_your_reasoning"],
-  "user_prompt": "What Python concept would you like to learn today?"
-}
-```
-
-### Code Reviewer
-```json
-{
-  "name": "code-reviewer",
-  "display_name": "Code Reviewer 🔍",
-  "description": "Reviews code for best practices, bugs, and improvements",
-  "system_prompt": [
-    "You are a senior software engineer doing code reviews.",
-    "You focus on code quality, security, and maintainability.",
-    "You provide constructive feedback with specific suggestions.",
-    "You follow language-specific best practices and conventions."
-  ],
-  "tools": ["list_files", "read_file", "grep", "agent_share_your_reasoning"],
-  "user_prompt": "Which code would you like me to review?"
-}
-```
-
-### DevOps Helper
-```json
-{
-  "name": "devops-helper",
-  "display_name": "DevOps Helper ⚙️",
-  "description": "Helps with Docker, CI/CD, and deployment tasks",
-  "system_prompt": [
-    "You are a DevOps engineer specialized in containerization and CI/CD.",
-    "You help with Docker, Kubernetes, GitHub Actions, and deployment.",
-    "You provide practical, production-ready solutions.",
-    "You always consider security and best practices."
-  ],
-  "tools": [
-    "list_files",
-    "read_file",
-    "create_file",
-    "replace_in_file",
-    "agent_run_shell_command",
-    "agent_share_your_reasoning"
-  ],
-  "user_prompt": "What DevOps task can I help you with today?"
-}
-```
-
-## File Locations
-
-### JSON Agents Directory
-- **All platforms**: `~/.code_puppy/agents/`
-
-### Python Agents Directory
-- **Built-in**: `code_puppy/agents/` (in package)
-
-## Best Practices
-
-### Naming
-- Use kebab-case (hyphens, not spaces)
-- Be descriptive: "python-tutor" not "tutor"
-- Avoid special characters
-
-### System Prompts
-- Be specific about the agent's role
-- Include personality traits
-- Specify output format preferences
-- Use array format for multi-line prompts
-
-### Tool Selection
-- Only include tools the agent actually needs
-- Most agents need `agent_share_your_reasoning`
-- File manipulation agents need `read_file`, `create_file`, `replace_in_file`
-- Note: `"edit_file"` still works in tool lists (auto-expands to the three individual tools)
-- Research agents need `grep`, `list_files`
-
-### Display Names
-- Include relevant emoji for personality
-- Make it friendly and recognizable
-- Keep it concise
-
-## System Architecture
-
-### Agent Discovery
-The system automatically discovers agents by:
-1. **Python Agents**: Scanning `code_puppy/agents/` for classes inheriting from `BaseAgent`
-2. **JSON Agents**: Scanning user's agents directory for `*-agent.json` files
-3. Instantiating and registering discovered agents
-
-### JSONAgent Implementation
-JSON agents are powered by the `JSONAgent` class (`code_puppy/agents/json_agent.py`):
-- Inherits from `BaseAgent` for full system integration
-- Loads configuration from JSON files with robust validation
-- Supports all BaseAgent features (tools, prompts, settings)
-- Cross-platform user directory support
-- Built-in error handling and schema validation
-
-### BaseAgent Interface
-Both Python and JSON agents implement this interface:
-- `name`: Unique identifier
-- `display_name`: Human-readable name with emoji
-- `description`: Brief description of purpose
-- `get_system_prompt()`: Returns agent-specific system prompt
-- `get_available_tools()`: Returns list of tool names
-
-### Agent Manager Integration
-The `agent_manager.py` provides:
-- Unified registry for both Python and JSON agents
-- Seamless switching between agent types
-- Configuration persistence across sessions
-- Automatic caching for performance
-
-### System Integration
-- **Command Interface**: `/agent` command works with all agent types
-- **Tool Filtering**: Dynamic tool access control per agent
-- **Main Agent System**: Loads and manages both agent types
-- **Cross-Platform**: Consistent behavior across all platforms
-
-## Adding Python Agents
-
-To create a new Python agent:
-
-1. Create file in `code_puppy/agents/` (e.g., `my_agent.py`)
-2. Implement class inheriting from `BaseAgent`
-3. Define required properties and methods
-4. Agent will be automatically discovered
-
-Example implementation:
-
-```python
-from .base_agent import BaseAgent
-
-class MyCustomAgent(BaseAgent):
-    @property
-    def name(self) -> str:
-        return "my-agent"
-
-    @property
-    def display_name(self) -> str:
-        return "My Custom Agent ✨"
-
-    @property
-    def description(self) -> str:
-        return "A custom agent for specialized tasks"
-
-    def get_system_prompt(self) -> str:
-        return "Your custom system prompt here..."
-
-    def get_available_tools(self) -> list[str]:
-        return [
-            "list_files",
-            "read_file",
-            "grep",
-            "create_file",
-            "replace_in_file",
-            "delete_snippet",
-            "delete_file",
-            "agent_run_shell_command",
-            "agent_share_your_reasoning"
-        ]
-```
-
-## Troubleshooting
-
-### Agent Not Found
-- Ensure JSON file is in correct directory
-- Check JSON syntax is valid
-- Restart Code Puppy or clear agent cache
-- Verify filename ends with `-agent.json`
-
-### Validation Errors
-- Use Agent Creator for guided validation
-- Check all required fields are present
-- Verify tool names are correct
-- Ensure name uses kebab-case
-
-### Permission Issues
-- Make sure agents directory is writable
-- Check file permissions on JSON files
-- Verify directory path exists
-
-## Advanced Features
-
-### Tool Configuration
-```json
-{
-  "tools_config": {
-    "timeout": 120,
-    "max_retries": 3
-  }
-}
-```
-
-### Multi-line System Prompts
-```json
-{
-  "system_prompt": [
-    "Line 1 of instructions",
-    "Line 2 of instructions",
-    "Line 3 of instructions"
-  ]
-}
-```
-
-## Future Extensibility
-
-The agent system supports future expansion:
-
-- **Specialized Agents**: Code reviewers, debuggers, architects
-- **Domain-Specific Agents**: Web dev, data science, DevOps, mobile
-- **Personality Variations**: Different communication styles
-- **Context-Aware Agents**: Adapt based on project type
-- **Team Agents**: Shared configurations for coding standards
-- **Plugin System**: Community-contributed agents
-
-## Benefits of JSON Agents
-
-1. **Easy Customization**: Create agents without Python knowledge
-2. **Team Sharing**: JSON agents can be shared across teams
-3. **Rapid Prototyping**: Quick agent creation for specific workflows
-4. **Version Control**: JSON agents are git-friendly
-5. **Built-in Validation**: Schema validation with helpful error messages
-6. **Cross-Platform**: Works consistently across all platforms
-7. **Backward Compatible**: Doesn't affect existing Python agents
-
-## Implementation Details
-
-### Files in System
-- **Core Implementation**: `code_puppy/agents/json_agent.py`
-- **Agent Discovery**: Integrated in `code_puppy/agents/agent_manager.py`
-- **Command Interface**: Works through existing `/agent` command
-- **Testing**: Comprehensive test suite in `tests/test_json_agents.py`
-
-### JSON Agent Loading Process
-1. System scans `~/.code_puppy/agents/` for `*-agent.json` files
-2. `JSONAgent` class loads and validates each JSON configuration
-3. Agents are registered in unified agent registry
-4. Users can switch to JSON agents via `/agent <name>` command
-5. Tool access and system prompts work identically to Python agents
-
-### Error Handling
-- Invalid JSON syntax: Clear error messages with line numbers
-- Missing required fields: Specific field validation errors
-- Invalid tool names: Warning with list of available tools
-- File permission issues: Helpful troubleshooting guidance
-
-## Future Possibilities
-
-- **Agent Templates**: Pre-built JSON agents for common tasks
-- **Visual Editor**: GUI for creating JSON agents
-- **Hot Reloading**: Update agents without restart
-- **Agent Marketplace**: Share and discover community agents
-- **Enhanced Validation**: More sophisticated schema validation
-- **Team Agents**: Shared configurations for coding standards
-
-## Contributing
-
-### Sharing JSON Agents
-1. Create and test your agent thoroughly
-2. Ensure it follows best practices
-3. Submit a pull request with agent JSON
-4. Include documentation and examples
-5. Test across different platforms
-
-### Python Agent Contributions
-1. Follow existing code style
-2. Include comprehensive tests
-3. Document the agent's purpose and usage
-4. Submit pull request for review
-5. Ensure backward compatibility
-
-### Agent Templates
-Consider contributing agent templates for:
-- Code reviewers and auditors
-- Language-specific tutors
-- DevOps and deployment helpers
-- Documentation writers
-- Testing specialists
-
----
-
-# Code Puppy Privacy Commitment
-
-**Zero-compromise privacy policy. Always.**
-
-Unlike other Agentic Coding software, there is no corporate or investor backing for this project, which means **zero pressure to compromise our principles for profit**. This isn't just a nice-to-have feature – it's fundamental to the project's DNA.
-
-### What Code Puppy _absolutely does not_ collect:
-- ❌ **Zero telemetry** – no usage analytics, crash reports, or behavioral tracking
-- ❌ **Zero prompt logging** – your code, conversations, or project details are never stored
-- ❌ **Zero behavioral profiling** – we don't track what you build, how you code, or when you use the tool
-- ❌ **Zero third-party data sharing** – your information is never sold, traded, or given away
-
-### What data flows where:
-- **LLM Provider Communication**: Your prompts are sent directly to whichever LLM provider you've configured (OpenAI, Anthropic, local models, etc.) – this is unavoidable for AI functionality
-- **Complete Local Option**: Run your own VLLM/SGLang/Llama.cpp server locally → **zero data leaves your network**. Configure this with `~/.code_puppy/extra_models.json`
-- **Direct Developer Contact**: All feature requests, bug reports, and discussions happen directly with me – no middleman analytics platforms or customer data harvesting tools
-
-### Our privacy-first architecture:
-Code Puppy is designed with privacy-by-design principles. Every feature has been evaluated through a privacy lens, and every integration respects user data sovereignty. When you use Code Puppy, you're not the product – you're just a developer getting things done.
-
-**This commitment is enforceable because it's structurally impossible to violate it.** No external pressures, no investor demands, no quarterly earnings targets to hit. Just solid code that respects your privacy.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+本项目采用 [MIT License](LICENSE)，并保留原项目的版权与作者信息。
