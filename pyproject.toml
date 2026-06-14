@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "code-puppy-cn"
 version = "0.1.0"
-description = "Bilingual Code Puppy distribution for China-region models"
+description = "Bilingual terminal coding agent with streamlined access to China-region AI models"
 readme = "README.md"
 requires-python = ">=3.11,<3.15"
 dependencies = [
@@ -58,6 +58,10 @@ durable = ["dbos>=2.11.0"]
 google = ["pydantic-ai-slim[google]==1.56.0"]
 
 [project.urls]
+Homepage = "https://github.com/clawbobot/code-puppy-cn"
+Repository = "https://github.com/clawbobot/code-puppy-cn"
+Issues = "https://github.com/clawbobot/code-puppy-cn/issues"
+Documentation = "https://github.com/clawbobot/code-puppy-cn#readme"
 Upstream = "https://github.com/mpfaffenberger/code_puppy"
 
 [project.scripts]
