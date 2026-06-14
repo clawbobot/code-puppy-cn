@@ -49,7 +49,7 @@ jobs:
       - run: uv run pytest tests --ignore tests/integration
 
   package:
-    name: Build distribution packages
+    name: Build and smoke-test distribution
     needs:
       - cross-platform
       - upstream-regression
@@ -61,6 +61,8 @@ jobs:
           python-version: "3.13"
       - run: uv build
       - run: uvx twine check dist/*
+      - name: Install wheel in a clean environment
+        run: uv run --no-project python scripts/smoke_package.py dist/*.whl
       - uses: actions/upload-artifact@v7.0.1
         with:
           name: code-puppy-cn-dist

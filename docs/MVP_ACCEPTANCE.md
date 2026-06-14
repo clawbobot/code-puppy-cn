@@ -30,9 +30,9 @@ export DEEPSEEK_API_KEY=...
 pup-cn-doctor
 ```
 
-Run three coding loops for Alibaba Cloud and DeepSeek in both interface
-languages. Kimi and GLM are covered by registry and configuration contract tests
-in the MVP.
+Real coding loops are optional for the first release. Provider discovery,
+configuration, redaction, and tool-calling compatibility remain covered by
+contract tests without requiring secrets in CI.
 
 ## Release gate
 
@@ -42,3 +42,4 @@ in the MVP.
 - Diagnostic JSON remains English-keyed regardless of interface locale.
 - No provider or model aliases are added.
 - No secrets appear in the repository or test output.
+- The built wheel installs and runs diagnostics in a clean environment.

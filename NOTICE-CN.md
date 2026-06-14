@@ -8,10 +8,10 @@ The upstream project and this distribution are licensed under the MIT License.
 China-region additions are intentionally kept in a small experience layer so
 upstream fixes and features can continue to be merged.
 
-Upstream baseline for the first MVP:
+Upstream baseline for Code Puppy CN 0.1.0:
 
-- Version: `0.0.564`
-- Commit: `c951364f51443a944aae0a197f4c2f99c86b41aa`
+- Version: `0.0.567`
+- Commit: `6df8f79`
 
 CN-specific changes:
 

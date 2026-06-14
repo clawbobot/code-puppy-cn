@@ -40,6 +40,9 @@ dev-dependencies = [
 authors = [
     {name = "Michael Pfaffenberger"}
 ]
+maintainers = [
+    {name = "clawbobot"}
+]
 license = {text = "MIT"}
 classifiers = [
     "Programming Language :: Python :: 3",

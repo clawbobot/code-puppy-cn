@@ -6,7 +6,7 @@ Code Puppy CN is a thin, MIT-licensed distribution of
 ## Repository layout
 
 - `upstream` tracks the original Code Puppy repository.
-- CN-specific changes live on the `code-puppy-cn-mvp` branch until release.
+- CN-specific release work is maintained on this repository's `main` branch.
 - The Python package remains `code_puppy` to minimize merge conflicts.
 - Public commands are `code-puppy-cn`, `pup-cn`, and `pup-cn-doctor`.
 
@@ -29,10 +29,12 @@ Distribution-specific:
 
 ```bash
 git fetch upstream
-git rebase upstream/main
+git merge upstream/main
 uv sync --dev
 uv run pytest tests/cn
 ```
 
 Resolve conflicts by preserving upstream provider, model, agent, MCP, and skill
 implementations. CN code should compose those capabilities rather than copy them.
+
+The current release baseline is recorded in [NOTICE-CN.md](NOTICE-CN.md).

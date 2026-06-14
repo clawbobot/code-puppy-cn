@@ -2,18 +2,19 @@
 
 ## Supported versions
 
-Code Puppy CN is currently a pre-release MVP. Security fixes are applied to the
-latest development branch and, after the first release, to the latest published
-version.
+Security fixes are applied to the latest published version and the `main`
+branch. Older releases may be asked to upgrade before a fix is provided.
 
 ## Reporting a vulnerability
 
 Do not open a public issue containing credentials, private endpoints, customer
-data, or exploit details. Use the repository owner's private security reporting
-channel after the public repository is created.
+data, or exploit details. Use GitHub's private vulnerability reporting for this
+repository:
 
-Until that channel is available, retain the report privately and provide only a
-sanitized notice through the maintainer's published contact channel.
+https://github.com/clawbobot/code-puppy-cn/security/advisories/new
+
+If private reporting is unavailable, retain the details privately and open only
+a sanitized issue asking the maintainer to establish a secure contact channel.
 
 ## Credential handling
 

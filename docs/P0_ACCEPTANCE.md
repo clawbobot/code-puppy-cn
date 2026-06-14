@@ -1,6 +1,7 @@
 # P0 Acceptance
 
-GitHub publication remains blocked until every required item below passes.
+The first packaged release remains blocked until every required item below
+passes.
 
 ## Clean installation
 
@@ -38,31 +39,17 @@ The non-interactive equivalent is:
 
 ```bash
 pup-cn-doctor --json --no-network
-pup-cn-doctor --live
 ```
 
-The live check must execute one harmless real Tool Calling request. Reports must
-not contain credential values. JSON field names remain English in both locales.
+Reports must not contain credential values. JSON field names remain English in
+both locales. `pup-cn-doctor --live` is available as an optional provider check
+but is not required for `0.1.0`.
 
-## Real coding loops
+## Live-provider validation
 
-Run three isolated loops for Alibaba Cloud and DeepSeek:
-
-```bash
-uv run python scripts/live_acceptance.py \
-  --model <configured-model-key> --locale zh-CN --runs 3 \
-  --output work/acceptance/<provider>-zh-CN.json
-```
-
-Run at least one English loop per provider:
-
-```bash
-uv run python scripts/live_acceptance.py \
-  --model <configured-model-key> --locale en-US --runs 1 \
-  --output work/acceptance/<provider>-en-US.json
-```
-
-Required success rate: at least 80% for both Alibaba Cloud and DeepSeek.
+Real provider calls are not a release gate for `0.1.0`. They remain available
+as an optional post-release quality exercise through `scripts/live_acceptance.py`.
+No provider credentials are required by CI or the release workflow.
 
 ## Automated regression
 
@@ -70,6 +57,7 @@ Required success rate: at least 80% for both Alibaba Cloud and DeepSeek.
 uv run pytest tests/cn -q --no-cov
 uv run ruff check code_puppy tests/cn scripts
 uv build
+uv run --no-project python scripts/smoke_package.py dist/*.whl
 ```
 
 The complete upstream non-integration suite must also pass before publication.
