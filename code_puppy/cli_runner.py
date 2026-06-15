@@ -226,7 +226,7 @@ async def main():
 
         set_model_name(early_model)
 
-    ensure_config_exists()
+    ensure_config_exists(interactive=not bool(args.prompt))
 
     # Validate cancel_agent_key configuration early
     try:

@@ -39,6 +39,24 @@ def mock_config_paths(monkeypatch):
 
 
 class TestEnsureConfigExists:
+    def test_non_interactive_config_uses_defaults(
+        self, mock_config_paths, monkeypatch
+    ):
+        mock_cfg_dir, mock_cfg_file = mock_config_paths
+        monkeypatch.setattr(os.path, "exists", MagicMock(return_value=True))
+        monkeypatch.setattr(os.path, "isfile", MagicMock(return_value=False))
+        mock_input = MagicMock(side_effect=AssertionError("input must not be called"))
+        monkeypatch.setattr("builtins.input", mock_input)
+
+        m_open = mock_open()
+        with patch("builtins.open", m_open):
+            config_parser = cp_config.ensure_config_exists(interactive=False)
+
+        mock_input.assert_not_called()
+        assert config_parser.get(DEFAULT_SECTION_NAME, "puppy_name") == "Puppy"
+        assert config_parser.get(DEFAULT_SECTION_NAME, "owner_name") == "User"
+        m_open.assert_called_once_with(mock_cfg_file, "w", encoding="utf-8")
+
     def test_no_config_dir_or_file_prompts_and_creates(
         self, mock_config_paths, monkeypatch
     ):

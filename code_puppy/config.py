@@ -214,9 +214,12 @@ _default_vision_model_cache = None
 _warned_no_model = False
 
 
-def ensure_config_exists():
+def ensure_config_exists(interactive: bool = True):
     """
     Ensure that XDG directories and puppy.cfg exist, prompting if needed.
+
+    Non-interactive callers receive stable defaults for required identity fields
+    so one-shot CLI commands never block waiting for stdin.
     Returns configparser.ConfigParser for reading.
     """
     # Create all XDG directories with 0700 permissions per XDG spec
@@ -240,7 +243,9 @@ def ensure_config_exists():
         sys.stdout.write("🐾 Let's get your Puppy ready!\n")
         sys.stdout.flush()
         for key in missing:
-            if key == "puppy_name":
+            if not interactive:
+                val = "Puppy" if key == "puppy_name" else "User"
+            elif key == "puppy_name":
                 val = input("What should we name the puppy? ").strip()
             elif key == "owner_name":
                 val = input(
