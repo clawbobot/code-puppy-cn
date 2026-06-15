@@ -86,6 +86,24 @@ from code_puppy.keymap import cancel_agent_uses_signal
 from code_puppy.messaging import emit_error, emit_info, emit_warning
 from code_puppy.tools.command_runner import is_awaiting_user_input
 
+
+class TaskLimitExceeded(RuntimeError):
+    """Stable enterprise task-limit failure."""
+
+
+async def _await_agent_task(
+    agent_task: asyncio.Task[Any], timeout_seconds: int | None
+) -> Any:
+    if not timeout_seconds:
+        return await agent_task
+    done, pending = await asyncio.wait({agent_task}, timeout=timeout_seconds)
+    if pending:
+        agent_task.cancel()
+        await asyncio.gather(agent_task, return_exceptions=True)
+        raise asyncio.TimeoutError
+    return next(iter(done)).result()
+
+
 # ---- Streaming retry helpers ------------------------------------------------
 
 # Every entry here is either an explicit provider "please retry" signal or an
@@ -320,6 +338,12 @@ async def run_with_mcp(
 
     prompt = _sanitize_prompt(prompt)
     group_id = str(uuid.uuid4())
+    try:
+        from code_puppy.enterprise import set_active_session
+
+        set_active_session(group_id)
+    except Exception:
+        pass
 
     # Fire user_prompt_submit hooks BEFORE prompt is sent. Plugins (e.g. the
     # claude_code_hooks bridge) may return a string to replace the prompt —
@@ -334,8 +358,23 @@ async def run_with_mcp(
         # Hook failures must never block the run.
         pass
 
-    if agent._code_generation_agent is None:
-        build_pydantic_agent(agent)
+    enterprise_enabled = False
+    try:
+        from code_puppy.enterprise import is_enabled
+
+        enterprise_enabled = is_enabled()
+    except Exception:
+        pass
+
+    if enterprise_enabled or agent._code_generation_agent is None:
+        try:
+            build_pydantic_agent(agent)
+        except Exception:
+            if enterprise_enabled:
+                from code_puppy.enterprise import set_active_session
+
+                set_active_session(None)
+            raise
     pydantic_agent = agent._code_generation_agent
 
     if output_type is not None:
@@ -343,10 +382,26 @@ async def run_with_mcp(
 
     prompt = _should_prepend_system_prompt(agent, prompt)
     prompt_payload = _build_prompt_payload(prompt, attachments, link_attachments)
+    enterprise_limits: dict[str, int] = {}
+    try:
+        from code_puppy.enterprise import get_run_limits
+
+        enterprise_limits = get_run_limits()
+    except Exception:
+        pass
+    enterprise_timeout = enterprise_limits.get("timeout_seconds")
 
     async def _do_run(prompt_to_use: Any) -> Any:
         """Run the agent once, then honour any plugin ``retry`` requests."""
-        usage_limits = UsageLimits(request_limit=get_message_limit())
+        request_limit = get_message_limit()
+        usage_kwargs: dict[str, int] = {"request_limit": request_limit}
+        if enterprise_limits:
+            usage_kwargs = {
+                "request_limit": enterprise_limits["request_limit"],
+                "tool_calls_limit": enterprise_limits["tool_calls_limit"],
+                "total_tokens_limit": enterprise_limits["total_tokens_limit"],
+            }
+        usage_limits = UsageLimits(**usage_kwargs)
 
         # Streaming config gate (issue #295). When streaming is disabled we
         # never install the stream handler at all and always render from the
@@ -473,12 +528,9 @@ async def run_with_mcp(
                     await stack.enter_async_context(cm)
                 return await _do_run(prompt_payload)
         except* UsageLimitExceeded as ule:
-            emit_info(f"Usage limit exceeded: {ule}", group_id=group_id)
-            emit_info(
-                "The agent has reached its usage limit. You can ask it to continue "
-                "by saying 'please continue' or similar.",
-                group_id=group_id,
-            )
+            message = f"task_limit_exceeded: {ule}"
+            emit_error(message, group_id=group_id)
+            raise TaskLimitExceeded(message) from ule
         except* mcp.shared.exceptions.McpError as mcp_error:
             # Already announced once by blocking_startup.py with a /mcp logs
             # hint. Don't re-vomit the exception text — just give the user
@@ -542,14 +594,32 @@ async def run_with_mcp(
     # yield control to the event loop and the agent task would race ahead
     # with stale credentials. See issue #338.
     try:
-        await on_agent_run_start(
+        start_results = await on_agent_run_start(
             agent_name=agent.name,
             model_name=agent.get_model_name(),
             session_id=group_id,
         )
+        blocked = next(
+            (
+                result
+                for result in start_results
+                if isinstance(result, dict) and result.get("blocked")
+            ),
+            None,
+        )
+        if enterprise_enabled and blocked:
+            from code_puppy.enterprise import set_active_session
+
+            set_active_session(None)
+            raise RuntimeError(
+                f"policy_denied: {blocked.get('reason', 'enterprise task blocked')}"
+            )
     except Exception:
-        # Hook failures never block the agent.
-        pass
+        if enterprise_enabled:
+            from code_puppy.enterprise import set_active_session
+
+            set_active_session(None)
+            raise
 
     # ``build_pydantic_agent`` may have kicked off fire-and-forget MCP
     # autostarts (``start_server_sync``). Await them so each server's
@@ -629,7 +699,16 @@ async def run_with_mcp(
         # resume the listener while they take over stdin.
         _key_listeners.set_active_handle(key_listener_handle)
 
-        result = await agent_task
+        try:
+            result = await _await_agent_task(agent_task, enterprise_timeout)
+        except asyncio.TimeoutError as exc:
+            run_error = TaskLimitExceeded(
+                "task_limit_exceeded: enterprise task duration limit reached"
+            )
+            emit_error(str(run_error), group_id=group_id)
+            drain_pause_state_on_cancel()
+            await on_agent_run_cancel(group_id)
+            raise run_error from exc
         run_success = True
         run_response_text = _extract_response_text(result)
         return result
@@ -656,6 +735,12 @@ async def run_with_mcp(
                 response_text=run_response_text,
                 metadata={"model": agent.get_model_name()},
             )
+        except Exception:
+            pass
+        try:
+            from code_puppy.enterprise import set_active_session
+
+            set_active_session(None)
         except Exception:
             pass
 

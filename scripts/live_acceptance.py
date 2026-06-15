@@ -28,16 +28,19 @@ def meets_success_threshold(passed: int, total: int, minimum: float) -> bool:
     return total > 0 and passed / total >= minimum
 
 
-def _prompt(locale: str) -> str:
+def _prompt(locale: str, test_command: list[str]) -> str:
+    rendered_command = " ".join(test_command)
     if locale == "zh-CN":
         return (
-            "使用 code-fix skill 修复当前项目。先运行 `python -m pytest -q` 复现问题，"
-            "只修改必要文件，修复后再次运行同一测试命令，并用中文总结修改和测试结果。"
+            f"使用 code-fix skill 修复当前项目。先运行 `{rendered_command}` "
+            "复现问题，只修改必要文件，修复后再次运行同一测试命令，"
+            "并用中文总结修改和测试结果。"
         )
     return (
-        "Use the code-fix skill to repair this project. Run `python -m pytest -q` "
-        "to reproduce the failure, change only required files, rerun the same test "
-        "command, and summarize changes and results in English."
+        "Use the code-fix skill to repair this project. Run "
+        f"`{rendered_command}` to reproduce the failure, change only required "
+        "files, rerun the same test command, and summarize changes and results "
+        "in English."
     )
 
 
@@ -50,6 +53,11 @@ def run_once(
     keep_projects: Path | None = None,
 ) -> dict:
     started = time.perf_counter()
+    manifest = json.loads((source / "acceptance.json").read_text(encoding="utf-8"))
+    test_command = [
+        sys.executable if item == "python" else item
+        for item in manifest["test_command"]
+    ]
     if keep_projects:
         temp_dir = keep_projects / f"run-{index}"
         shutil.rmtree(temp_dir, ignore_errors=True)
@@ -62,7 +70,7 @@ def run_once(
         project = Path(temp_dir) / "code-fix"
         shutil.copytree(source, project, ignore=shutil.ignore_patterns("__pycache__"))
         baseline = subprocess.run(
-            [sys.executable, "-m", "pytest", "-q"],
+            test_command,
             cwd=project,
             capture_output=True,
             text=True,
@@ -79,7 +87,7 @@ def run_once(
             "--model",
             model,
             "--prompt",
-            _prompt(locale),
+            _prompt(locale, manifest["test_command"]),
         ]
         try:
             agent_env = os.environ.copy()
@@ -98,7 +106,7 @@ def run_once(
                 check=False,
             )
             tests = subprocess.run(
-                [sys.executable, "-m", "pytest", "-q"],
+                test_command,
                 cwd=project,
                 capture_output=True,
                 text=True,
@@ -111,7 +119,7 @@ def run_once(
                 for path in before.keys() | after.keys()
                 if before.get(path) != after.get(path)
             )
-            allowed_changes = {"calculator.py"}
+            allowed_changes = set(manifest["allowed_changes"])
             success = (
                 baseline.returncode != 0
                 and agent.returncode == 0
@@ -121,12 +129,14 @@ def run_once(
             )
             return {
                 "run": index,
+                "project": manifest["name"],
                 "success": success,
                 "duration_seconds": round(time.perf_counter() - started, 2),
                 "baseline_test_exit_code": baseline.returncode,
                 "agent_exit_code": agent.returncode,
                 "test_exit_code": tests.returncode,
                 "changed_files": changed_files,
+                "test_command": manifest["test_command"],
                 "baseline_output": baseline.stdout[-500:],
                 "test_output": tests.stdout[-500:],
                 "agent_output_tail": (agent.stdout + agent.stderr)[-1500:],
@@ -149,6 +159,11 @@ def main() -> int:
         "--model", required=True, help="Configured Code Puppy model key"
     )
     parser.add_argument("--locale", choices=("zh-CN", "en-US"), default="zh-CN")
+    parser.add_argument(
+        "--project",
+        choices=("python", "typescript", "build"),
+        default="python",
+    )
     parser.add_argument("--runs", type=int, default=3)
     parser.add_argument("--timeout", type=int, default=600)
     parser.add_argument(
@@ -167,7 +182,16 @@ def main() -> int:
     if not 0 <= args.min_success_rate <= 1:
         parser.error("--min-success-rate must be between 0.0 and 1.0")
 
-    source = Path(__file__).parents[1] / "demo" / "code-fix"
+    project_directories = {
+        "python": "code-fix",
+        "typescript": "code-fix-typescript",
+        "build": "code-fix-build",
+    }
+    source = (
+        Path(__file__).parents[1]
+        / "demo"
+        / project_directories[args.project]
+    )
     results = [
         run_once(
             source,
@@ -183,6 +207,7 @@ def main() -> int:
     report = {
         "schema_version": 1,
         "model": args.model,
+        "project": args.project,
         "locale": args.locale,
         "enterprise_mode": bool(os.environ.get("CODE_PUPPY_ENTERPRISE_HOME")),
         "passed": passed,

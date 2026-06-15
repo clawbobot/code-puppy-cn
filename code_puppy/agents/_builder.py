@@ -253,6 +253,15 @@ def _autostart_bound_servers(manager: Any, agent_name: str) -> None:
     pydantic-ai's re-entry hits the refcount fast-path and never creates a
     competing cancel scope.
     """
+    try:
+        from code_puppy.enterprise import mcp_autostart_allowed
+
+        if not mcp_autostart_allowed():
+            emit_warning("MCP auto-start is disabled by enterprise policy.")
+            return
+    except (RuntimeError, ValueError):
+        emit_warning("MCP auto-start blocked because enterprise policy is unavailable.")
+        return
     targets = list(_iter_autostart_targets(manager, agent_name))
     if not targets:
         return
@@ -280,6 +289,15 @@ async def autostart_bound_servers_async(manager: Any, agent_name: str) -> None:
     pydantic-ai agent against the same MCP servers (sub-agent invocation,
     notably).
     """
+    try:
+        from code_puppy.enterprise import mcp_autostart_allowed
+
+        if not mcp_autostart_allowed():
+            emit_warning("MCP auto-start is disabled by enterprise policy.")
+            return
+    except (RuntimeError, ValueError):
+        emit_warning("MCP auto-start blocked because enterprise policy is unavailable.")
+        return
     targets = list(_iter_autostart_targets(manager, agent_name))
     if not targets:
         return

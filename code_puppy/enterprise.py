@@ -20,6 +20,13 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 from code_puppy import __version__
 
 TOKEN_ENV = "CODE_PUPPY_ENTERPRISE_TOKEN"
+DEFAULT_RUN_LIMITS = {
+    "request_limit": 12,
+    "tool_calls_limit": 20,
+    "total_tokens_limit": 100_000,
+    "timeout_seconds": 600,
+}
+_ACTIVE_SESSION_ID: str | None = None
 
 
 def enterprise_dir() -> Path:
@@ -80,6 +87,46 @@ def get_config(require_valid: bool = True) -> dict[str, Any]:
 def is_enabled() -> bool:
     state = get_state()
     return bool(state.get("enabled") and state.get("access_token"))
+
+
+def set_active_session(session_id: str | None) -> None:
+    global _ACTIVE_SESSION_ID
+    _ACTIVE_SESSION_ID = session_id
+
+
+def active_session_id() -> str | None:
+    return _ACTIVE_SESSION_ID
+
+
+def _normalized_run_limits(configured: dict[str, Any]) -> dict[str, int]:
+    limits: dict[str, int] = {}
+    for key, default in DEFAULT_RUN_LIMITS.items():
+        try:
+            value = int(configured.get(key, default))
+        except (TypeError, ValueError):
+            value = default
+        limits[key] = value if value > 0 else default
+    return limits
+
+
+def get_run_limits() -> dict[str, int]:
+    if not is_enabled():
+        return {}
+    return _normalized_run_limits(get_config().get("run_limits") or {})
+
+
+def strict_audit_enabled(config: dict[str, Any] | None = None) -> bool:
+    if os.environ.get("CODE_PUPPY_ENTERPRISE_STRICT_AUDIT") == "1":
+        return True
+    policy = (config or get_config()).get("policy") or {}
+    return bool((policy.get("audit") or {}).get("strict", True))
+
+
+def mcp_autostart_allowed() -> bool:
+    if not is_enabled():
+        return True
+    policy = get_config().get("policy") or {}
+    return (policy.get("mcp") or {}).get("default") != "deny"
 
 
 def _headers(state: dict[str, Any]) -> dict[str, str]:
@@ -261,6 +308,7 @@ def model_configs() -> dict[str, Any]:
                 "headers": {
                     "X-Device-Id": state.get("device_id", ""),
                     "X-Project-Id": project_id,
+                    "X-Session-Id": active_session_id() or "",
                 },
             },
         }
@@ -294,7 +342,58 @@ def status() -> dict[str, Any]:
         "heartbeat_error": state.get("heartbeat_error"),
         "last_audit": state.get("last_audit"),
         "audit_error": state.get("audit_error"),
+        "run_limits": (
+            _normalized_run_limits(config.get("run_limits") or {})
+            if state.get("enabled")
+            else {}
+        ),
     }
+
+
+def doctor() -> dict[str, Any]:
+    result: dict[str, Any] = {
+        "ok": False,
+        "enabled": is_enabled(),
+        "checks": {},
+    }
+    if not result["enabled"]:
+        result["checks"]["login"] = {"ok": False, "detail": "not_logged_in"}
+        return result
+
+    state = get_state()
+    try:
+        config = get_config()
+        result["checks"]["config"] = {
+            "ok": True,
+            "version": config.get("version"),
+            "expires_at": config.get("expires_at"),
+        }
+    except (RuntimeError, ValueError, KeyError) as exc:
+        result["checks"]["config"] = {"ok": False, "detail": str(exc)}
+        return result
+
+    try:
+        response = httpx.get(
+            f"{state['server_url']}/health/ready",
+            headers=_headers(state),
+            timeout=10,
+        )
+        response.raise_for_status()
+        result["checks"]["server"] = {"ok": True, "detail": response.json()}
+    except (httpx.HTTPError, ValueError) as exc:
+        result["checks"]["server"] = {"ok": False, "detail": str(exc)}
+        return result
+
+    result["checks"]["gateway"] = {
+        "ok": bool(config.get("gateway_url")),
+        "url": config.get("gateway_url"),
+    }
+    result["checks"]["models"] = {
+        "ok": bool(config.get("models")),
+        "count": len(config.get("models") or []),
+    }
+    result["ok"] = all(check.get("ok") for check in result["checks"].values())
+    return result
 
 
 def cli_main(argv: list[str] | None = None) -> int:
@@ -306,6 +405,7 @@ def cli_main(argv: list[str] | None = None) -> int:
     subparsers.add_parser("status")
     subparsers.add_parser("sync")
     subparsers.add_parser("logout")
+    subparsers.add_parser("doctor")
     args = parser.parse_args(argv)
     try:
         if args.command == "login":
@@ -320,6 +420,10 @@ def cli_main(argv: list[str] | None = None) -> int:
         elif args.command == "logout":
             logout()
             print("Enterprise credentials and configuration removed.")
+        elif args.command == "doctor":
+            result = doctor()
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+            return 0 if result["ok"] else 1
         return 0
     except (httpx.HTTPError, RuntimeError, ValueError) as exc:
         print(f"Enterprise command failed: {exc}", file=sys.stderr)

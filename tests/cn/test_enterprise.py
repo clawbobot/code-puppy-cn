@@ -73,6 +73,58 @@ def test_expired_config_fails_closed(enterprise_home):
     )
     with pytest.raises(RuntimeError, match="expired"):
         enterprise.get_config()
+    assert enterprise.status()["config_expires_at"]
+
+
+def test_run_limits_use_defaults_and_validate_values(enterprise_home):
+    enterprise._write(
+        enterprise.state_path(),
+        {"access_token": "secret", "enabled": True},
+    )
+    enterprise._write(
+        enterprise.config_path(),
+        {
+            "expires_at": (
+                datetime.now(timezone.utc) + timedelta(minutes=5)
+            ).isoformat(),
+            "run_limits": {
+                "request_limit": "4",
+                "tool_calls_limit": 0,
+                "total_tokens_limit": "invalid",
+            },
+        },
+    )
+    assert enterprise.get_run_limits() == {
+        "request_limit": 4,
+        "tool_calls_limit": 20,
+        "total_tokens_limit": 100_000,
+        "timeout_seconds": 600,
+    }
+
+
+def test_model_config_carries_active_session(enterprise_home):
+    enterprise._write(
+        enterprise.state_path(),
+        {
+            "access_token": "secret",
+            "enabled": True,
+            "device_id": "device-1",
+        },
+    )
+    enterprise._write(
+        enterprise.config_path(),
+        {
+            "expires_at": (
+                datetime.now(timezone.utc) + timedelta(minutes=5)
+            ).isoformat(),
+            "gateway_url": "https://gateway.example",
+            "models": [{"alias": "qwen", "model": "qwen", "provider": "ollama"}],
+        },
+    )
+    enterprise.set_active_session("session-1")
+    headers = enterprise.model_configs()["qwen"]["custom_endpoint"]["headers"]
+    assert headers["X-Session-Id"] == "session-1"
+    enterprise.set_active_session(None)
 
 
 def test_heartbeat_reports_client_and_config_version(enterprise_home, monkeypatch):

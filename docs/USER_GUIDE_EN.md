@@ -194,3 +194,16 @@ use a shorter prompt with explicit commands, allowed files, and completion
 criteria.
 
 Project: <https://github.com/clawbobot/code-puppy-cn>
+## Enterprise Pilot Commands
+
+After login and signed configuration sync, run:
+
+```bash
+pup-cn enterprise status
+pup-cn enterprise doctor
+```
+
+`doctor` verifies local configuration expiry, platform readiness, the managed
+gateway, and available models. Enterprise tasks default to 12 model requests,
+20 tool calls, 100,000 tokens, and 600 seconds. Signed platform configuration
+may adjust these values. Exceeding a limit returns `task_limit_exceeded`.

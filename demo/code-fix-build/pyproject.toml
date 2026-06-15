@@ -1,0 +1,4 @@
+[project]
+name = "code-puppy-build-pilot"
+version = "0.1.0"
+requires-python = ">=4.0"

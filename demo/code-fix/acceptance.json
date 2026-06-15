@@ -1,0 +1,5 @@
+{
+  "name": "python",
+  "test_command": ["python", "-m", "pytest", "-q"],
+  "allowed_changes": ["calculator.py"]
+}

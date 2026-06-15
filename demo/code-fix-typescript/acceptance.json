@@ -1,0 +1,5 @@
+{
+  "name": "typescript",
+  "test_command": ["node", "--test"],
+  "allowed_changes": ["src/discount.ts"]
+}

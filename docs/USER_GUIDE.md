@@ -388,3 +388,15 @@ pup-cn enterprise sync
 - 不包含密钥、源码和内部地址的错误片段。
 
 项目地址：<https://github.com/clawbobot/code-puppy-cn>
+## 13. 企业试点命令
+
+登录并同步签名配置后，可以运行：
+
+```bash
+pup-cn enterprise status
+pup-cn enterprise doctor
+```
+
+`doctor` 会检查本地配置有效期、平台就绪状态、企业网关和可用模型。企业任务默认
+限制为最多 12 次模型请求、20 次工具调用、100,000 Token 和 600 秒；平台可以
+通过签名配置调整这些值。达到限制后返回 `task_limit_exceeded`。
