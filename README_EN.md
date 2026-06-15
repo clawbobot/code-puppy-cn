@@ -16,6 +16,11 @@ Code Puppy CN is an AI coding agent that runs in your terminal. It can understan
 
 The interface can switch between Simplified Chinese and English at any time while retaining Code Puppy's Agent, Skills, MCP, and model extension capabilities.
 
+For complete installation, configuration, workflow, enterprise enrollment, and
+troubleshooting instructions, see the
+[English User Guide](docs/USER_GUIDE_EN.md) or
+[中文用户手册](docs/USER_GUIDE.md).
+
 ## Highlights
 
 - **Natural-language coding**: analyze code, locate defects, implement features, refactor, and add tests.
