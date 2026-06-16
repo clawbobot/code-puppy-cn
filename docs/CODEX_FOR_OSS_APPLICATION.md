@@ -126,13 +126,14 @@ and maintainer workflow demos rather than claiming broad adoption prematurely.
 - [x] Record release URL.
 - [ ] Confirm README and docs describe user value clearly.
 - [ ] Collect adoption and workflow evidence.
-- [ ] Find OpenAI Organization ID in the OpenAI Platform dashboard.
-- [ ] Review the Codex for Open Source Program Terms.
-- [ ] Submit the official form.
-- [ ] Save submission date and follow-up status in this document.
+- [x] Find OpenAI Organization ID in the OpenAI Platform dashboard.
+- [x] Review the Codex for Open Source Program Terms.
+- [x] Submit the official form.
+- [x] Save submission date and follow-up status in this document.
 
 ## Follow-Up Tracking
 
 | Date | Status | Notes |
 | ---- | ------ | ----- |
 | 2026-06-16 | Release ready | `v0.1.0` published; latest `main` CI passed. Awaiting personal account details, OpenAI Organization ID, and final form submission confirmation. |
+| 2026-06-16 | Submitted | Application submitted manually by the maintainer using `jadetreer@gmail.com`, `clawbobot`, and organization `org-3hk7tlLXhGZlJzxTmDiz5vLU`. |
