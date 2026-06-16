@@ -51,6 +51,13 @@ Real provider calls are not a release gate for `0.1.0`. They remain available
 as an optional post-release quality exercise through `scripts/live_acceptance.py`.
 No provider credentials are required by CI or the release workflow.
 
+## Post-release open-source program task
+
+After `v0.1.0` is published, prepare the Codex for Open Source application using
+the public repository evidence in
+[`docs/CODEX_FOR_OSS_APPLICATION.md`](CODEX_FOR_OSS_APPLICATION.md). This is not
+a release blocker, but it should be completed before the next growth milestone.
+
 ## Automated regression
 
 ```bash
