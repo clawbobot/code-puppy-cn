@@ -20,15 +20,21 @@ Repository:
 
 - Public URL: https://github.com/clawbobot/code-puppy-cn
 - License: MIT
-- Status: pre-release MVP
+- Status: `v0.1.0` MVP released
 - Current public adoption signal: early, not yet strong
 
 Assessment:
 
-Apply after `v0.1.0` is published and the repository has enough public evidence
-to support the application. Do not present the project as widely adopted before
-there is real usage, stars, forks, issues, downstream users, or maintainer
-workflow evidence.
+The project now has a first public release and passing CI evidence. The
+application can proceed, but it should still be positioned as an early-stage
+public OSS distribution rather than a widely adopted project until there is real
+usage, stars, forks, issues, downstream users, or maintainer workflow evidence.
+
+Public evidence:
+
+- Release: https://github.com/clawbobot/code-puppy-cn/releases/tag/v0.1.0
+- Latest passing CI: https://github.com/clawbobot/code-puppy-cn/actions/runs/27623193526
+- Repository: https://github.com/clawbobot/code-puppy-cn
 
 ## Required Application Inputs
 
@@ -113,11 +119,11 @@ and maintainer workflow demos rather than claiming broad adoption prematurely.
 
 ## Submission Checklist
 
-- [ ] Publish `v0.1.0`.
+- [x] Publish `v0.1.0`.
 - [ ] Confirm repository remains public.
 - [ ] Confirm GitHub profile visibility is public.
-- [ ] Record latest passing CI URL.
-- [ ] Record release URL.
+- [x] Record latest passing CI URL.
+- [x] Record release URL.
 - [ ] Confirm README and docs describe user value clearly.
 - [ ] Collect adoption and workflow evidence.
 - [ ] Find OpenAI Organization ID in the OpenAI Platform dashboard.
@@ -129,4 +135,4 @@ and maintainer workflow demos rather than claiming broad adoption prematurely.
 
 | Date | Status | Notes |
 | ---- | ------ | ----- |
-| TBD  | Draft  | Waiting for `v0.1.0` release and public evidence. |
+| 2026-06-16 | Release ready | `v0.1.0` published; latest `main` CI passed. Awaiting personal account details, OpenAI Organization ID, and final form submission confirmation. |
