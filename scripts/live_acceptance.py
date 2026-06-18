@@ -15,13 +15,22 @@ from pathlib import Path
 
 def snapshot_source_files(project: Path) -> dict[str, str]:
     ignored_parts = {"__pycache__", ".pytest_cache"}
-    return {
-        path.relative_to(project).as_posix(): path.read_text(encoding="utf-8")
-        for path in project.rglob("*")
-        if path.is_file()
-        and not ignored_parts.intersection(path.parts)
-        and path.suffix != ".pyc"
-    }
+    ignored_names = {".coverage"}
+    snapshot: dict[str, str] = {}
+    for path in project.rglob("*"):
+        if (
+            not path.is_file()
+            or ignored_parts.intersection(path.parts)
+            or path.name in ignored_names
+            or path.suffix == ".pyc"
+        ):
+            continue
+        try:
+            content = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        snapshot[path.relative_to(project).as_posix()] = content
+    return snapshot
 
 
 def meets_success_threshold(passed: int, total: int, minimum: float) -> bool:

@@ -260,9 +260,11 @@ async def _agent_run_start(
 async def _agent_run_end(
     agent_name: str,
     model_name: str,
-    session_id: str,
-    success: bool,
+    session_id: str | None = None,
+    success: bool = True,
     error: Any = None,
+    response_text: str | None = None,
+    metadata: dict | None = None,
     **_: Any,
 ) -> None:
     if not is_enabled():
@@ -284,6 +286,8 @@ async def _agent_run_end(
                 "model": model_name,
                 "success": success,
                 "termination_reason": code or ("completed" if success else "error"),
+                "response_present": bool(response_text),
+                "runtime_metadata_keys": sorted((metadata or {}).keys()),
             },
         },
         strict=False,

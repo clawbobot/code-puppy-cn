@@ -3,6 +3,8 @@ from scripts.live_acceptance import meets_success_threshold, snapshot_source_fil
 
 def test_snapshot_source_files_ignores_test_caches(tmp_path):
     (tmp_path / "calculator.py").write_text("value = 1\n", encoding="utf-8")
+    (tmp_path / ".coverage").write_bytes(b"\x00\x95coverage")
+    (tmp_path / "artifact.bin").write_bytes(b"\xff\xfe\x00")
     cache = tmp_path / ".pytest_cache"
     cache.mkdir()
     (cache / "state").write_text("changed", encoding="utf-8")

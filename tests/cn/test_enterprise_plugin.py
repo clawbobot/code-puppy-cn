@@ -149,3 +149,34 @@ async def test_agent_start_blocks_when_strict_audit_is_offline(
         "code-puppy", "qwen", "session-1"
     )
     assert result["code"] == "policy_denied"
+
+
+@pytest.mark.asyncio
+async def test_agent_end_accepts_full_callback_contract(
+    enterprise_home, monkeypatch
+):
+    delivered = []
+
+    async def capture(event, *, strict):
+        delivered.append((event, strict))
+        return True
+
+    monkeypatch.setattr(register_callbacks, "_deliver_audit", capture)
+    await register_callbacks._agent_run_end(
+        "code-puppy",
+        "qwen",
+        "session-1",
+        True,
+        None,
+        "Task completed",
+        {"model": "qwen"},
+    )
+
+    event, strict = delivered[0]
+    assert strict is False
+    assert event["event_type"] == "task_end"
+    assert event["session_id"] == "session-1"
+    assert event["metadata"]["termination_reason"] == "completed"
+    assert event["metadata"]["response_present"] is True
+    assert event["metadata"]["runtime_metadata_keys"] == ["model"]
+    assert "Task completed" not in str(event)
