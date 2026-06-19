@@ -6,6 +6,7 @@ import argparse
 import json
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -18,6 +19,7 @@ def main() -> int:
     args = parser.parse_args()
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
+    started_at = datetime.now(timezone.utc)
     matrix = (("python", 4), ("typescript", 3), ("build", 3))
     summaries = []
     exit_code = 0
@@ -54,6 +56,8 @@ def main() -> int:
         "schema_version": 1,
         "model": args.model,
         "locale": args.locale,
+        "started_at": started_at.isoformat(),
+        "completed_at": datetime.now(timezone.utc).isoformat(),
         "passed": passed,
         "total": total,
         "success_rate": passed / total if total else 0,

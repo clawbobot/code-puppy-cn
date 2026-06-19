@@ -298,7 +298,9 @@ class TestModelFactoryBasics:
             }
         }
 
-        with patch.dict(os.environ, {}, clear=True):
+        with patch.dict(os.environ, {}, clear=True), patch(
+            "code_puppy.enterprise.enforce_model"
+        ):
             with patch("code_puppy.model_factory.emit_warning") as mock_warn:
                 model = ModelFactory.get_model("custom-model", config)
 
